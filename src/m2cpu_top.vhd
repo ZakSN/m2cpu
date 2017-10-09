@@ -42,17 +42,31 @@ architecture a0 of m2cpu_top is
 	end component register_8bit;
 
 ------------------signal section----------------------------
-
+	
+	signal data_bus : std_logic_vector(7 downto 0) bus; --aparently this is how you do busses
+	
 begin
 
-	test_reg : component register_8bit port map
+	reg_1 : component register_8bit port map
 	(
 		di  => SW(7 downto 0),
-		do  => LED(7 downto 0),
+		do  => data_bus,
 		ld  => not(KEY(0)),
 		oe  => SW(9),
-		rs  => not(KEY(1)),
+		rs  => '0',
 		clk => CLK50
 	);
+	
+	reg_2 : component register_8bit port map
+	(
+		di  => SW(7 downto 0),
+		do  => data_bus,
+		ld  => not(KEY(1)),
+		oe  => SW(8),
+		rs  => '0',
+		clk => CLK50
+	);
+	
+	LED(7 downto 0) <= data_bus;
 
 end architecture a0;
