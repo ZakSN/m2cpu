@@ -29,64 +29,30 @@ architecture a0 of m2cpu_top is
 		hex_out   : out std_logic_vector(7 downto 0) --7 seg code (active high)
 	);
 	end component seven_seg_decoder;
+	
+	component register_8bit is port
+	(
+		di	 : in std_logic_vector(7 downto 0); --data in
+		do	 : out std_logic_vector(7 downto 0); --data out
+		ld	 : in std_logic; --load (on rising edge)
+		oe  : in std_logic; --out put enable (active high)
+		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
+		clk : in std_logic
+	);
+	end component register_8bit;
 
 ------------------signal section----------------------------
 
-	signal h0 : std_logic_vector(7 downto 0);
-	signal h1 : std_logic_vector(7 downto 0);
-	signal h2 : std_logic_vector(7 downto 0);
-	signal h3 : std_logic_vector(7 downto 0);
-	signal h4 : std_logic_vector(7 downto 0);
-	signal h5 : std_logic_vector(7 downto 0);
-
 begin
 
-	dec0: component seven_seg_decoder port map
+	test_reg : component register_8bit port map
 	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h0
+		di  => SW(7 downto 0),
+		do  => LED(7 downto 0),
+		ld  => not(KEY(0)),
+		oe  => SW(9),
+		rs  => not(KEY(1)),
+		clk => CLK50
 	);
-	HEX0 <= not(h0);
-	
-	dec1: component seven_seg_decoder port map
-	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h1
-	);
-	HEX1 <= not(h1);
-	
-	dec2: component seven_seg_decoder port map
-	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h2
-	);
-	HEX2 <= not(h2);
-	
-	dec3: component seven_seg_decoder port map
-	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h3
-	);
-	HEX3 <= not(h3);
-	
-	dec4: component seven_seg_decoder port map
-	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h4
-	);
-	HEX4 <= not(h4);
-	
-	dec5: component seven_seg_decoder port map
-	(
-		nybble_in => SW(3 downto 0),
-		d_point   => not(KEY(0)),
-		hex_out   => h5
-	);
-	HEX5 <= not(h5);
 
 end architecture a0;
