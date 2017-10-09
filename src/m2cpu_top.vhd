@@ -43,13 +43,13 @@ architecture a0 of m2cpu_top is
 
 ------------------signal section----------------------------
 	
-	signal data_bus : std_logic_vector(7 downto 0) bus; --aparently this is how you do busses
+	signal data_bus : std_logic_vector(7 downto 0) bus := "LLLLLLLL"; --aparently this is how you do busses
 	
 begin
-
+	
 	reg_1 : component register_8bit port map
 	(
-		di  => SW(7 downto 0),
+		di  => data_bus,
 		do  => data_bus,
 		ld  => not(KEY(0)),
 		oe  => SW(9),
