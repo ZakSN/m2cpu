@@ -1,0 +1,18 @@
+# ignore file by extension.
+*.rpt
+*.qdf
+*.done
+*.dpf
+*.summary
+*.pin
+*.pof
+*.qws
+*.sof
+*.smsg
+*.txt
+db/
+incremental_db/
+simulation/
+
+# => excludes *.sof from ignoring.
+#!*.sof

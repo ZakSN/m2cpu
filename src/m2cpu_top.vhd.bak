@@ -1,0 +1,24 @@
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity m2cpu_top is port
+(
+   LED      : out std_logic_vector (9 downto 0); --leds
+   SW       : in std_logic_vector (9 downto 0); --toggle switches
+   KEY      : in std_logic_vector (1 downto 0); --momentary push buttons
+	--7 segment (+ dp) displays
+	HEX0		: out std_logic_vector (7 downto 0); 
+	HEX1		: out std_logic_vector (7 downto 0);
+	HEX2		: out std_logic_vector (7 downto 0);
+	HEX3		: out std_logic_vector (7 downto 0);
+	HEX4		: out std_logic_vector (7 downto 0);
+	HEX5		: out std_logic_vector (7 downto 0);
+   CLK50    : in std_logic --system clock
+);
+end entity m2cpu_top;
+
+architecture behaviour of m2cpu_top is
+
+begin
+
+end architecture behaviour;
