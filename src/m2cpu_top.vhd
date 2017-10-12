@@ -43,7 +43,7 @@ architecture a0 of m2cpu_top is
 
 ------------------signal section----------------------------
 	
-	signal data_bus : std_logic_vector(7 downto 0) bus := "LLLLLLLL"; --aparently this is how you do busses
+	signal data_bus : std_logic_vector(7 downto 0);
 	
 begin
 	
