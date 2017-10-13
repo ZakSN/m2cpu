@@ -32,5 +32,5 @@ begin
 				 "1111001" when "1110", --0xE
 				 "1110001" when "1111", --0xF
 				 "0000000" when others;
-	hex_out <= d_point & hex;
+	hex_out <= NOT(d_point & hex);
 end architecture a0;

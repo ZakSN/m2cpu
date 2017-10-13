@@ -40,33 +40,95 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component register_8bit;
+	
+	component arithmetic_logic_unit is port
+	(
+		xin : in std_logic_vector(7 downto 0); --operand from x register
+		yin : in std_logic_vector(7 downto 0); --operand from the y register
+		res : out std_logic_vector(7 downto 0); --result of operation between x and y
+		opr : in std_logic_vector(2 downto 0); --the operation to perform
+		zro, neg, cry, ovf : out std_logic --zero, negative, carry, overflow flag outputs
+	);
+	end component arithmetic_logic_unit;
 
 ------------------signal section----------------------------
 	
-	signal data_bus : std_logic_vector(7 downto 0);
+	--signal data_bus : std_logic_vector(7 downto 0);
+	signal x : std_logic_vector(7 downto 0);
+	signal y : std_logic_vector(7 downto 0);
+	signal result : std_logic_vector(7 downto 0);
 	
 begin
 	
-	reg_1 : component register_8bit port map
+	--x register and display
+	x_reg : component register_8bit port map
 	(
-		di  => data_bus,
-		do  => data_bus,
+		di  => SW(7 downto 0),
+		do  => x,
 		ld  => not(KEY(0)),
 		oe  => SW(9),
 		rs  => '0',
 		clk => CLK50
 	);
+	x_disp_hi : component seven_seg_decoder port map
+	(
+		nybble_in => x(7 downto 4),
+		d_point => '0',
+		hex_out => HEX5
+	);
+	x_disp_lo : component seven_seg_decoder port map
+	(
+		nybble_in => x(3 downto 0),
+		d_point => '0',
+		hex_out => HEX4
+	);
 	
-	reg_2 : component register_8bit port map
+	--y register and display
+	y_reg : component register_8bit port map
 	(
 		di  => SW(7 downto 0),
-		do  => data_bus,
+		do  => y,
 		ld  => not(KEY(1)),
 		oe  => SW(8),
 		rs  => '0',
 		clk => CLK50
 	);
+	y_disp_hi : component seven_seg_decoder port map
+	(
+		nybble_in => y(7 downto 4),
+		d_point => '0',
+		hex_out => HEX3
+	);
+	y_disp_lo : component seven_seg_decoder port map
+	(
+		nybble_in => y(3 downto 0),
+		d_point => '0',
+		hex_out => HEX2
+	);
 	
-	LED(7 downto 0) <= data_bus;
+	--alu and result displa
+	alu : component arithmetic_logic_unit port map
+	(
+		xin => x,
+		yin => y,
+		res => result,
+		opr => SW(2 downto 0),
+		zro => LED(0),
+		neg => LED(1),
+		cry => LED(2),
+		ovf => LED(3)
+	);
+	alu_disp_hi : component seven_seg_decoder port map
+	(
+		nybble_in => result(7 downto 4),
+		d_point => '0',
+		hex_out => HEX1
+	);
+	alu_disp_lo : component seven_seg_decoder port map
+	(
+		nybble_in => result(3 downto 0),
+		d_point => '0',
+		hex_out => HEX0
+	);
 
 end architecture a0;
