@@ -50,83 +50,48 @@ architecture a0 of m2cpu_top is
 		zro, neg, cry, ovf : out std_logic --zero, negative, carry, overflow flag outputs
 	);
 	end component arithmetic_logic_unit;
+	
+	component stack_pointer is port
+	(
+		di	 : in std_logic_vector(7 downto 0); --data in
+		do	 : out std_logic_vector(7 downto 0); --data out
+		ld	 : in std_logic; --load (on rising edge)
+		oe  : in std_logic; --out put enable (active high)
+		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
+		ph  : in std_logic; --push (increment address)
+		pp  : in std_logic; --pop (decrement address)
+		clk : in std_logic
+	);
+	end component stack_pointer;
 
 ------------------signal section----------------------------
 	
 	--signal data_bus : std_logic_vector(7 downto 0);
-	signal x : std_logic_vector(7 downto 0);
-	signal y : std_logic_vector(7 downto 0);
-	signal result : std_logic_vector(7 downto 0);
+	signal sp_out : std_logic_vector(7 downto 0);
 	
 begin
 	
-	--x register and display
-	x_reg : component register_8bit port map
+	sp : component stack_pointer port map
 	(
-		di  => SW(7 downto 0),
-		do  => x,
-		ld  => not(KEY(0)),
-		oe  => SW(9),
-		rs  => '0',
+		di => SW(7 downto 0),
+		do => sp_out,
+		ld => SW(8),
+		oe => SW(9),
+		rs => '0',
+		ph => not(KEY(1)),
+		pp => not(KEY(0)),
 		clk => CLK50
 	);
-	x_disp_hi : component seven_seg_decoder port map
-	(
-		nybble_in => x(7 downto 4),
-		d_point => '0',
-		hex_out => HEX5
-	);
-	x_disp_lo : component seven_seg_decoder port map
-	(
-		nybble_in => x(3 downto 0),
-		d_point => '0',
-		hex_out => HEX4
-	);
 	
-	--y register and display
-	y_reg : component register_8bit port map
+	sp_disp_hi : component seven_seg_decoder port map
 	(
-		di  => SW(7 downto 0),
-		do  => y,
-		ld  => not(KEY(1)),
-		oe  => SW(8),
-		rs  => '0',
-		clk => CLK50
-	);
-	y_disp_hi : component seven_seg_decoder port map
-	(
-		nybble_in => y(7 downto 4),
-		d_point => '0',
-		hex_out => HEX3
-	);
-	y_disp_lo : component seven_seg_decoder port map
-	(
-		nybble_in => y(3 downto 0),
-		d_point => '0',
-		hex_out => HEX2
-	);
-	
-	--alu and result displa
-	alu : component arithmetic_logic_unit port map
-	(
-		xin => x,
-		yin => y,
-		res => result,
-		opr => SW(2 downto 0),
-		zro => LED(0),
-		neg => LED(1),
-		cry => LED(2),
-		ovf => LED(3)
-	);
-	alu_disp_hi : component seven_seg_decoder port map
-	(
-		nybble_in => result(7 downto 4),
+		nybble_in => sp_out(7 downto 4),
 		d_point => '0',
 		hex_out => HEX1
 	);
-	alu_disp_lo : component seven_seg_decoder port map
+	sp_disp_lo : component seven_seg_decoder port map
 	(
-		nybble_in => result(3 downto 0),
+		nybble_in => sp_out(3 downto 0),
 		d_point => '0',
 		hex_out => HEX0
 	);
