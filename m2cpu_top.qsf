@@ -127,4 +127,5 @@ set_global_assignment -name VHDL_FILE src/register_8bit.vhd
 set_global_assignment -name VHDL_FILE src/arithmetic_logic_unit.vhd
 set_global_assignment -name VHDL_FILE src/stack_pointer.vhd
 set_global_assignment -name VHDL_FILE src/program_counter.vhd
+set_global_assignment -name VHDL_FILE src/accumulator.vhd
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

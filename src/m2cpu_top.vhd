@@ -75,46 +75,48 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component program_counter;
+	
+	component accumulator is port
+	(
+		bi  : in std_logic_vector(7 downto 0); --bus data in
+		ai  : in std_logic_vector(7 downto 0); --alu data in
+		do	 : out std_logic_vector(7 downto 0); --data out
+		lb	 : in std_logic; --load from bus
+		la  : in std_logic; --load from alu
+		oe  : in std_logic; --out put enable (active high)
+		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
+		clk : in std_logic
+	);
+	end component accumulator;
 
 ------------------signal section----------------------------
 	
 	--signal data_bus : std_logic_vector(7 downto 0);
-	signal pc_out : std_logic_vector(15 downto 0);
+	signal a_out : std_logic_vector(7 downto 0);
 	
 begin
 	
-	pc : component program_counter port map
+	a : component accumulator port map
 	(
-		ai => "00000000"&SW(7 downto 0),
-		ao => pc_out,
-		ld => SW(8),
-		oe => SW(9),
-		rs => not(KEY(1)),
-		inc => not(KEY(0)),
+		bi => SW(7 downto 4) & "0000",
+		ai => "0000" & SW(3 downto 0),
+		do => a_out,
+		lb => NOT(KEY(0)),
+		la => NOT(KEY(1)),
+		oe => SW(8),
+		rs => SW(9),
 		clk => CLK50
 	);
-	
-	pc_hi_hi : component seven_seg_decoder port map
+
+	a_hi : component seven_seg_decoder port map
 	(
-		nybble_in => pc_out(15 downto 12),
-		d_point => '0',
-		hex_out => HEX3
-	);
-	pc_hi_lo : component seven_seg_decoder port map
-	(
-		nybble_in => pc_out(11 downto 8),
-		d_point => '0',
-		hex_out => HEX2
-	);
-	pc_lo_hi : component seven_seg_decoder port map
-	(
-		nybble_in => pc_out(7 downto 4),
+		nybble_in => a_out(7 downto 4),
 		d_point => '0',
 		hex_out => HEX1
 	);
-	pc_lo_lo : component seven_seg_decoder port map
+	a_lo : component seven_seg_decoder port map
 	(
-		nybble_in => pc_out(3 downto 0),
+		nybble_in => a_out(3 downto 0),
 		d_point => '0',
 		hex_out => HEX0
 	);
