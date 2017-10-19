@@ -53,8 +53,8 @@ architecture a0 of m2cpu_top is
 	
 	component stack_pointer is port
 	(
-		di	 : in std_logic_vector(7 downto 0); --data in
-		do	 : out std_logic_vector(7 downto 0); --data out
+		pi	 : in std_logic_vector(7 downto 0); --data in
+		po	 : out std_logic_vector(7 downto 0); --data out
 		ld	 : in std_logic; --load (on rising edge)
 		oe  : in std_logic; --out put enable (active high)
 		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
@@ -63,35 +63,58 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component stack_pointer;
+	
+	component program_counter is port
+	(
+		ai  : in std_logic_vector(15 downto 0); -- address in
+		ao  : out std_logic_vector(15 downto 0); -- address out
+		inc : in std_logic; -- increase address
+		ld  : in std_logic; -- load
+		oe  : in std_logic; -- output enable
+		rs  : in std_logic; -- reset
+		clk : in std_logic
+	);
+	end component program_counter;
 
 ------------------signal section----------------------------
 	
 	--signal data_bus : std_logic_vector(7 downto 0);
-	signal sp_out : std_logic_vector(7 downto 0);
+	signal pc_out : std_logic_vector(15 downto 0);
 	
 begin
 	
-	sp : component stack_pointer port map
+	pc : component program_counter port map
 	(
-		di => SW(7 downto 0),
-		do => sp_out,
+		ai => "00000000"&SW(7 downto 0),
+		ao => pc_out,
 		ld => SW(8),
 		oe => SW(9),
-		rs => '0',
-		ph => not(KEY(1)),
-		pp => not(KEY(0)),
+		rs => not(KEY(1)),
+		inc => not(KEY(0)),
 		clk => CLK50
 	);
 	
-	sp_disp_hi : component seven_seg_decoder port map
+	pc_hi_hi : component seven_seg_decoder port map
 	(
-		nybble_in => sp_out(7 downto 4),
+		nybble_in => pc_out(15 downto 12),
+		d_point => '0',
+		hex_out => HEX3
+	);
+	pc_hi_lo : component seven_seg_decoder port map
+	(
+		nybble_in => pc_out(11 downto 8),
+		d_point => '0',
+		hex_out => HEX2
+	);
+	pc_lo_hi : component seven_seg_decoder port map
+	(
+		nybble_in => pc_out(7 downto 4),
 		d_point => '0',
 		hex_out => HEX1
 	);
-	sp_disp_lo : component seven_seg_decoder port map
+	pc_lo_lo : component seven_seg_decoder port map
 	(
-		nybble_in => sp_out(3 downto 0),
+		nybble_in => pc_out(3 downto 0),
 		d_point => '0',
 		hex_out => HEX0
 	);
