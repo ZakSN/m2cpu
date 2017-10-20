@@ -88,37 +88,78 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component accumulator;
+	
+	component memory is port
+	(
+		address	: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		clock		: IN STD_LOGIC  := '1';
+		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		rden		: IN STD_LOGIC  := '1';
+		wren		: IN STD_LOGIC ;
+		q			: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+	);
+	end component;
 
 ------------------signal section----------------------------
 	
 	--signal data_bus : std_logic_vector(7 downto 0);
-	signal a_out : std_logic_vector(7 downto 0);
+	signal ah_out : std_logic_vector(7 downto 0);
+	signal al_out : std_logic_vector(7 downto 0);
 	
 begin
 	
-	a : component accumulator port map
+	addr_hi : component register_8bit port map
 	(
-		bi => SW(7 downto 4) & "0000",
-		ai => "0000" & SW(3 downto 0),
-		do => a_out,
-		lb => NOT(KEY(0)),
-		la => NOT(KEY(1)),
-		oe => SW(8),
-		rs => SW(9),
+		di => SW(7 downto 0),
+		do => ah_out,
+		ld => SW(9),
+		oe => '1',
+		rs => '0',
 		clk => CLK50
 	);
-
-	a_hi : component seven_seg_decoder port map
+	a_hi_hi : component seven_seg_decoder port map
 	(
-		nybble_in => a_out(7 downto 4),
+		nybble_in => ah_out(7 downto 4),
+		d_point => '0',
+		hex_out => HEX3
+	);
+	a_hi_lo : component seven_seg_decoder port map
+	(
+		nybble_in => ah_out(3 downto 0),
+		d_point => '0',
+		hex_out => HEX2
+	);
+	
+	addr_lo : component register_8bit port map
+	(
+		di => SW(7 downto 0),
+		do => al_out,
+		ld => SW(8),
+		oe => '1',
+		rs => '0',
+		clk => CLK50
+	);
+	a_lo_hi : component seven_seg_decoder port map
+	(
+		nybble_in => al_out(7 downto 4),
 		d_point => '0',
 		hex_out => HEX1
 	);
-	a_lo : component seven_seg_decoder port map
+	a_lo_lo : component seven_seg_decoder port map
 	(
-		nybble_in => a_out(3 downto 0),
+		nybble_in => al_out(3 downto 0),
 		d_point => '0',
 		hex_out => HEX0
+	);
+	
+	mem64k : component memory port map
+	(
+		address	=> ah_out & al_out,
+		clock		=> CLK50,
+		data		=> SW(7 downto 0),
+		rden		=> NOT(KEY(0)),
+		wren		=> NOT(KEY(1)),
+		q			=> LED(7 downto 0)
 	);
 
 end architecture a0;
