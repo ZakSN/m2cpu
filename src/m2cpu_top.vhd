@@ -22,13 +22,14 @@ architecture a0 of m2cpu_top is
 
 ------------------component section-------------------------
 
-	component seven_seg_decoder is port
+	component byte_display is port
 	(
-		nybble_in : in std_logic_vector(3 downto 0); --binary to decode
-		d_point 	 : in std_logic; --decimal point (active high)
-		hex_out   : out std_logic_vector(7 downto 0) --7 seg code (active high)
+		byte_in : in std_logic_vector(7 downto 0);
+		d_point : in std_logic_vector(1 downto 0); -- hi & low
+		hex_out_hi : out std_logic_vector(7 downto 0);
+		hex_out_lo : out std_logic_vector(7 downto 0)
 	);
-	end component seven_seg_decoder;
+	end component byte_display;
 	
 	component register_8bit is port
 	(
@@ -117,17 +118,12 @@ begin
 		rs => '0',
 		clk => CLK50
 	);
-	a_hi_hi : component seven_seg_decoder port map
+	a_hi : component byte_display port map
 	(
-		nybble_in => ah_out(7 downto 4),
-		d_point => '0',
-		hex_out => HEX3
-	);
-	a_hi_lo : component seven_seg_decoder port map
-	(
-		nybble_in => ah_out(3 downto 0),
-		d_point => '0',
-		hex_out => HEX2
+		byte_in => ah_out(7 downto 0),
+		d_point => "00",
+		hex_out_hi => HEX3,
+		hex_out_lo => HEX2
 	);
 	
 	addr_lo : component register_8bit port map
@@ -139,17 +135,12 @@ begin
 		rs => '0',
 		clk => CLK50
 	);
-	a_lo_hi : component seven_seg_decoder port map
+	a_lo: component byte_display port map
 	(
-		nybble_in => al_out(7 downto 4),
-		d_point => '0',
-		hex_out => HEX1
-	);
-	a_lo_lo : component seven_seg_decoder port map
-	(
-		nybble_in => al_out(3 downto 0),
-		d_point => '0',
-		hex_out => HEX0
+		byte_in => al_out(7 downto 0),
+		d_point => "00",
+		hex_out_hi => HEX1,
+		hex_out_lo => HEX0
 	);
 	
 	mem64k : component memory port map
