@@ -9,12 +9,12 @@ end entity central_processing_unit;
 
 architecture a0 of central_processing_unit is
 
+	------------------component section-------------------------
 	component register_8bit is port
 	(
 		di	 : in std_logic_vector(7 downto 0); --data in
 		do	 : out std_logic_vector(7 downto 0); --data out
 		ld	 : in std_logic; --load (on rising edge)
-		oe  : in std_logic; --out put enable (active high)
 		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 		clk : in std_logic
 	);
@@ -35,7 +35,6 @@ architecture a0 of central_processing_unit is
 		pi	 : in std_logic_vector(7 downto 0); --data in
 		po	 : out std_logic_vector(7 downto 0); --data out
 		ld	 : in std_logic; --load (on rising edge)
-		oe  : in std_logic; --out put enable (active high)
 		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 		ph  : in std_logic; --push (increment address)
 		pp  : in std_logic; --pop (decrement address)
@@ -49,7 +48,6 @@ architecture a0 of central_processing_unit is
 		ao  : out std_logic_vector(15 downto 0); -- address out
 		inc : in std_logic; -- increase address
 		ld  : in std_logic; -- load
-		oe  : in std_logic; -- output enable
 		rs  : in std_logic; -- reset
 		clk : in std_logic
 	);
@@ -62,11 +60,12 @@ architecture a0 of central_processing_unit is
 		do	 : out std_logic_vector(7 downto 0); --data out
 		lb	 : in std_logic; --load from bus
 		la  : in std_logic; --load from alu
-		oe  : in std_logic; --out put enable (active high)
 		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 		clk : in std_logic
 	);
 	end component general_purpose_register;
+	
+	------------------signal section-------------------------
 
 begin
 

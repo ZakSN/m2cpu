@@ -6,7 +6,6 @@ entity register_8bit is port
 	di	 : in std_logic_vector(7 downto 0); --data in
 	do	 : out std_logic_vector(7 downto 0); --data out
 	ld	 : in std_logic; --load (on rising edge)
-	oe  : in std_logic; --out put enable (active high)
 	rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 	clk : in std_logic
 );
@@ -17,8 +16,7 @@ architecture a0 of register_8bit is
 	signal d : std_logic_vector(7 downto 0);
 
 begin
-	--tristate buffer
-	do <= d when oe = '1' else "ZZZZZZZZ";
+	do <= d;
 	
 	--register process
 	reg : process (clk, ld, rs)
