@@ -2,10 +2,10 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity accumulator is port
+entity general_purpose_register is port
 (
-	bi  : in std_logic_vector(7 downto 0); --bus data in
-	ai  : in std_logic_vector(7 downto 0); --alu data in
+	ai  : in std_logic_vector(7 downto 0); -- a data in
+	bi  : in std_logic_vector(7 downto 0); -- b data in
 	do	 : out std_logic_vector(7 downto 0); --data out
 	lb	 : in std_logic; --load from bus
 	la  : in std_logic; --load from alu
@@ -13,9 +13,9 @@ entity accumulator is port
 	rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 	clk : in std_logic
 );
-end entity accumulator;
+end entity general_purpose_register;
 
-architecture a0 of accumulator is
+architecture a0 of general_purpose_register is
 
 	component register_8bit is port
 	(
