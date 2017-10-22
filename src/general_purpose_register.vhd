@@ -7,8 +7,8 @@ entity general_purpose_register is port
 	ai  : in std_logic_vector(7 downto 0); -- a data in
 	bi  : in std_logic_vector(7 downto 0); -- b data in
 	do	 : out std_logic_vector(7 downto 0); --data out
-	lb	 : in std_logic; --load from bus
-	la  : in std_logic; --load from alu
+	la  : in std_logic; --load from a
+	lb	 : in std_logic; --load from b
 	rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 	clk : in std_logic
 );

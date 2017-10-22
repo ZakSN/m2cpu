@@ -6,8 +6,8 @@ entity program_counter is port
 (
 	ai  : in std_logic_vector(15 downto 0); -- address in
 	ao  : out std_logic_vector(15 downto 0); -- address out
-	inc : in std_logic; -- increase address
 	ld  : in std_logic; -- load
+	inc : in std_logic; -- increase address
 	rs  : in std_logic; -- reset
 	clk : in std_logic
 );
