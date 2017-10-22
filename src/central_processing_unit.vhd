@@ -111,7 +111,7 @@ begin
 	(
 		ai => data_bus,
 		bi => alu_r,
-		do => ao
+		do => ao,
 		la => laab(0),
 		lb => laab(1),
 		rs => rst,
@@ -146,7 +146,7 @@ begin
 	X : component general_purpose_register port map
 	(
 		ai => data_bus,
-		bi => stkptr,
+		bi => spo,
 		do => xo,
 		la => lxab(0),
 		lb => lxab(1),
@@ -168,12 +168,12 @@ begin
 	
 	--data bus mux:
 	with data_sel select
-		data_bus <= A when "000",
-						G when "001",
-						H when "010",
+		data_bus <= ao when "000",
+						go when "001",
+						ho when "010",
 						memory_in when "011",
-						X when "100",
-						Y when "101",
+						xo when "100",
+						yo when "101",
 						"00000000" when others;
 	data_out <= data_bus;
 	
