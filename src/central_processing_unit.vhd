@@ -3,11 +3,12 @@ use ieee.std_logic_1164.all;
 
 entity central_processing_unit is port
 (
-	signal memory_in : in std_logic_vector(7 downto 0); -- RAM interface
-	signal data_out : out std_logic_vector(7 downto 0); -- data bus
-	signal address_out : out std_logic_vector(15 downto 0); -- address bus
-	signal rst : in std_logic; -- global reset, all registers, PC, and FSM
-	signal clk : in std_logic
+	current_instruction : out std_logic_vector(7 downto 0);
+	memory_in : in std_logic_vector(7 downto 0); -- RAM interface
+	data_out : out std_logic_vector(7 downto 0); -- data bus
+	address_out : out std_logic_vector(15 downto 0); -- address bus
+	rst : in std_logic; -- global reset, all registers, PC, and FSM
+	clk : in std_logic
 );
 end entity central_processing_unit;
 
@@ -69,6 +70,12 @@ architecture a0 of central_processing_unit is
 	);
 	end component general_purpose_register;
 	
+	component finite_state_machine is port
+	(
+		
+	);
+	end component finite_state_machine;
+	
 	------------------signal section-------------------------
 	-- busses and bus selects
 	signal data_bus : std_logic_vector(7 downto 0);
@@ -90,18 +97,20 @@ architecture a0 of central_processing_unit is
 	signal yo : std_logic_vector(7 downto 0);
 	signal lyab : std_logic_vector(1 downto 0);
 	-- special purpose register signals:
-	signal status : std_logic_vector(7 downto 0); -- status (S) register output
+	signal so : std_logic_vector(7 downto 0); -- status (S) register output
 	signal ls : std_logic; -- load S
 	signal spo : std_logic_vector(7 downto 0); -- stack pointer (SP) output
 	signal ldphpp : std_logic_vector(2 downto 0); -- load & push & pop SP
 	signal pco : std_logic_vector(15 downto 0); -- program counter (PC) output
 	signal ldinc : std_logic_vector(1 downto 0); -- load & increment PC
+	signal iro : std_logic_vector(7 downto 0); -- instruction register (IR) output
+	signal lir : std_logic; -- load IR
 	-- alu signals
 	signal alu_op : std_logic_vector(2 downto 0); -- alu operation code
 	signal znco : std_logic_vector(3 downto 0); -- alu status flag vector
 	signal alu_y : std_logic_vector(7 downto 0); -- alu y operand
 	signal alu_r : std_logic_vector(7 downto 0); -- alu result
-	signal alu_mx : std_logic; -- alu y operand mux select 
+	signal alu_mx : std_logic; -- alu y operand mux select
 	
 begin
 
@@ -112,8 +121,8 @@ begin
 		ai => data_bus,
 		bi => alu_r,
 		do => ao,
-		la => laab(0),
-		lb => laab(1),
+		la => laab(1),
+		lb => laab(0),
 		rs => rst,
 		clk => clk
 	);
@@ -124,8 +133,8 @@ begin
 		ai => data_bus,
 		bi => addr_bus(15 downto 8),
 		do => go,
-		la => lgab(0),
-		lb => lgab(1),
+		la => lgab(1),
+		lb => lgab(0),
 		rs => rst,
 		clk => clk
 	);
@@ -136,8 +145,8 @@ begin
 		ai => data_bus,
 		bi => addr_bus(7 downto 0),
 		do => ho,
-		la => lhab(0),
-		lb => lhab(1),
+		la => lhab(1),
+		lb => lhab(0),
 		rs => rst,
 		clk => clk
 	);
@@ -148,8 +157,8 @@ begin
 		ai => data_bus,
 		bi => spo,
 		do => xo,
-		la => lxab(0),
-		lb => lxab(1),
+		la => lxab(1),
+		lb => lxab(0),
 		rs => rst,
 		clk => clk
 	);
@@ -158,10 +167,10 @@ begin
 	Y : component general_purpose_register port map
 	(
 		ai => data_bus,
-		bi => status,
+		bi => so,
 		do => yo,
-		la => lyab(0),
-		lb => lyab(1),
+		la => lyab(1),
+		lb => lyab(0),
 		rs => rst,
 		clk => clk
 	);
@@ -184,10 +193,10 @@ begin
 		yin => alu_y,
 		res => alu_r,
 		opr => alu_op,
-		zro => znco(0),
-		neg => znco(1),
-		cry => znco(2),
-		ovf => znco(3)
+		zro => znco(3),
+		neg => znco(2),
+		cry => znco(1),
+		ovf => znco(0)
 	);
 	with alu_mx select
 		alu_y <= yo when '0',
@@ -196,7 +205,7 @@ begin
 	S : component register_8bit port map
 	(
 		di	=> "0000" & znco,
-		do	=> status,
+		do	=> so,
 		ld	=> ls,
 		rs => rst,
 		clk => clk
@@ -207,10 +216,10 @@ begin
 	(
 		pi	=> xo,
 		po	=> spo,
-		ld	=> ldphpp(0),
+		ld	=> ldphpp(2),
 		rs => rst,
 		ph => ldphpp(1),
-		pp => ldphpp(2),
+		pp => ldphpp(0),
 		clk => clk
 	);
 	------------------end 8 bit processing logic-------------------------
@@ -220,8 +229,8 @@ begin
 	(
 		ai => addr_bus,
 		ao => pco,
-		ld => ldinc(0),
-		inc => ldinc(1),
+		ld => ldinc(1),
+		inc => ldinc(0),
 		rs => rst,
 		clk => clk
 	);
@@ -232,5 +241,18 @@ begin
 						"0000000000000000" when others;
 	address_out <= addr_bus;
 	------------------end 16 bit addressing logic-------------------------
+	
+	------------------control logic-------------------------
+	IR : component register_8bit port map
+	(
+		di	 => memory_in,
+		do	 => iro,
+		ld	 => lir,
+		rs  => rst,
+		clk => clk
+	);
+	current_instruction <= iro;
+	
+	------------------end control logic-------------------------
 	
 end architecture a0;

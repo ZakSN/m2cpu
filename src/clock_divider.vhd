@@ -8,19 +8,19 @@ entity clock_divider is port
 	rst : in std_logic; --async reset
 	clkout : out std_logic --slow clock (human visible)
 );
-end clock_divider;
+end entity clock_divider;
 
 architecture a0 of clock_divider is
 
 	signal count : unsigned(0 to 31);
 	signal stop :   std_logic;
-	constant MainFreq : integer := 50000000; -- ~1Hz
+	constant MainFreq : integer := 25000000; -- ~1Hz
 
 begin
 
 	counter: process (clkin, rst)
 	begin
-	if (rst = '0') then
+	if (rst = '1') then
 		count <= to_unsigned(MainFreq, 32);
 		stop <= '0';
 	elsif (rising_edge(clkin)) then
