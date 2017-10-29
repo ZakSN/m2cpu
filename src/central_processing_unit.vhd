@@ -72,14 +72,25 @@ architecture a0 of central_processing_unit is
 	
 	component status_register is port
 	(
-		di : out std_logic_vector(7 downto 0); 
-		do	: in std_logic_vector(7 downto 0);
+		si : out std_logic_vector(7 downto 0); 
+		so	: in std_logic_vector(7 downto 0);
 		fsr : in std_logic_vector(7 downto 0); -- flag set reset: set znco & clear znco
 		ld	: in std_logic;
 		rs : in std_logic;
 		clk : in std_logic
 	);
 	end component status_register;
+	
+	component instruction_register is port
+	(
+		ii	 : in std_logic_vector(7 downto 0); -- instruction in
+		io	 : out std_logic_vector(7 downto 0); -- instruction out
+		ld	 : in std_logic; -- load (on rising edge)
+		inc : in std_logic; -- increment instruction
+		rs  : in std_logic; -- asynchronus reset (active high, resets to zero)
+		clk : in std_logic
+	);
+	end component instruction_register;
 	
 	------------------signal section-------------------------
 	-- busses and bus selects
@@ -108,9 +119,9 @@ architecture a0 of central_processing_unit is
 	signal spo : std_logic_vector(7 downto 0); -- stack pointer (SP) output
 	signal ldphpp : std_logic_vector(2 downto 0); -- load & push & pop SP
 	signal pco : std_logic_vector(15 downto 0); -- program counter (PC) output
-	signal ldinc : std_logic_vector(1 downto 0); -- load & increment PC
+	signal pcldinc : std_logic_vector(1 downto 0); -- load & increment PC
 	signal iro : std_logic_vector(7 downto 0); -- instruction register (IR) output
-	signal lir : std_logic; -- load IR
+	signal irldinc : std_logic; -- load IR & increment IR
 	-- alu signals
 	signal alu_op : std_logic_vector(2 downto 0); -- alu operation code
 	signal znco : std_logic_vector(3 downto 0); -- alu status flag vector
@@ -210,8 +221,8 @@ begin
 					"00000000" when others;
 	S : component status_register port map
 	(
-		di	=> "0000" & znco,
-		do	=> so,
+		si	=> "0000" & znco,
+		so	=> so,
 		fsr => SzncoCznco,
 		ld	=> ls,
 		rs => rst,
@@ -236,8 +247,8 @@ begin
 	(
 		ai => addr_bus,
 		ao => pco,
-		ld => ldinc(1),
-		inc => ldinc(0),
+		ld => pcldinc(1),
+		inc => pcldinc(0),
 		rs => rst,
 		clk => clk
 	);
@@ -250,11 +261,12 @@ begin
 	------------------end 16 bit addressing logic-------------------------
 	
 	------------------control logic-------------------------
-	IR : component register_8bit port map
+	IR : component instruction_register port map
 	(
-		di	 => memory_in,
-		do	 => iro,
-		ld	 => lir,
+		ii	 => memory_in,
+		io	 => iro,
+		ld	 => irldinc(1),
+		inc => irldinc(0),
 		rs  => rst,
 		clk => clk
 	);
