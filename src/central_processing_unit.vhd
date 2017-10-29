@@ -70,11 +70,16 @@ architecture a0 of central_processing_unit is
 	);
 	end component general_purpose_register;
 	
-	component finite_state_machine is port
+	component status_register is port
 	(
-		
+		di : out std_logic_vector(7 downto 0); 
+		do	: in std_logic_vector(7 downto 0);
+		fsr : in std_logic_vector(7 downto 0); -- flag set reset: set znco & clear znco
+		ld	: in std_logic;
+		rs : in std_logic;
+		clk : in std_logic
 	);
-	end component finite_state_machine;
+	end component status_register;
 	
 	------------------signal section-------------------------
 	-- busses and bus selects
@@ -99,6 +104,7 @@ architecture a0 of central_processing_unit is
 	-- special purpose register signals:
 	signal so : std_logic_vector(7 downto 0); -- status (S) register output
 	signal ls : std_logic; -- load S
+	signal SzncoCznco : std_logic_vector(7 downto 0); -- set & clear status register flags
 	signal spo : std_logic_vector(7 downto 0); -- stack pointer (SP) output
 	signal ldphpp : std_logic_vector(2 downto 0); -- load & push & pop SP
 	signal pco : std_logic_vector(15 downto 0); -- program counter (PC) output
@@ -202,10 +208,11 @@ begin
 		alu_y <= yo when '0',
 					data_bus when '1',
 					"00000000" when others;
-	S : component register_8bit port map
+	S : component status_register port map
 	(
 		di	=> "0000" & znco,
 		do	=> so,
+		fsr => SzncoCznco,
 		ld	=> ls,
 		rs => rst,
 		clk => clk

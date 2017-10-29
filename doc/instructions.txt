@@ -100,13 +100,21 @@ x/stack pointer interchange:
 			 assert `ld' on stack pointer.
 	- number: 2
 
+NOTE: status flag microcode may be wrong. might need another state to deassert 
+flag code. Or rewrite sttus register...
+
 set status flag:
 	- description: set [q] flag in the status register, where [q] is one of
 	  the available flags: `z', `n', `c', `o'.
 	- mnemonic schema: S[q]F
 	- list: SZF, SNF, SCF, SOF
-XXXXXXXX- microcode: signle state instruction
-XXXXXXXX	state 1: LOGIC NOT PROPERLY IMPLEMENTED
+	- microcode: signle state instruction
+		state 1: assert `ld' on S. assert set flag code.
+			set flag codes:
+				set z: 10000000
+				set n: 01000000
+				set c: 00100000
+				set o: 00010000
 	- number: 4
 
 clear status flag:
@@ -114,8 +122,13 @@ clear status flag:
 	  the available flags: `z', `n', `c', `o'.
 	- mnemonic schema: C[q]F
 	- list: CZF, CNF, CCF, COF
-XXXXXXXX- microcode: single state instruction
-XXXXXXXX	state 1: LOGIC NOT PROPERLY IMPLEMENTED
+	- microcode: single state instruction
+		state 1: assert `ld' on S. assert clear flag code.
+			clear flag codes:
+				clear z: 00001000
+				clear n: 00000100
+				clear c: 00000010
+				clear o: 00000001
 	- number: 4
 
 push general purpose register to stack:
