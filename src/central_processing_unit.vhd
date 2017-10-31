@@ -3,10 +3,12 @@ use ieee.std_logic_1164.all;
 
 entity central_processing_unit is port
 (
-	current_instruction : out std_logic_vector(7 downto 0);
-	memory_in : in std_logic_vector(7 downto 0); -- RAM interface
-	data_out : out std_logic_vector(7 downto 0); -- data bus
-	address_out : out std_logic_vector(15 downto 0); -- address bus
+	-- bus names are from the processor's prespective
+	data_bus_in  : in std_logic_vector(7 downto 0);
+	data_bus_out : out std_logic_vector(7 downto 0);
+	addr_bus_out : out std_logic_vector(15 downto 0);
+	memory_wren  : out std_logic;
+	debug_out    : out std_logic_vector(15 downto 0); -- general purpose debug vector
 	rst : in std_logic; -- global reset, all registers, PC, and FSM
 	clk : in std_logic
 );
@@ -40,9 +42,9 @@ architecture a0 of central_processing_unit is
 		pi	 : in std_logic_vector(7 downto 0); --data in
 		po	 : out std_logic_vector(7 downto 0); --data out
 		ld	 : in std_logic; --load (on rising edge)
-		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 		ph  : in std_logic; --push (increment address)
 		pp  : in std_logic; --pop (decrement address)
+		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 		clk : in std_logic
 	);
 	end component stack_pointer;
@@ -74,8 +76,8 @@ architecture a0 of central_processing_unit is
 	(
 		si : out std_logic_vector(7 downto 0); 
 		so	: in std_logic_vector(7 downto 0);
-		fsr : in std_logic_vector(7 downto 0); -- flag set reset: set znco & clear znco
 		ld	: in std_logic;
+		fsc : in std_logic_vector(7 downto 0); -- flag set clear: set znco & clear znco
 		rs : in std_logic;
 		clk : in std_logic
 	);
@@ -114,8 +116,7 @@ architecture a0 of central_processing_unit is
 	signal lyab : std_logic_vector(1 downto 0);
 	-- special purpose register signals:
 	signal so : std_logic_vector(7 downto 0); -- status (S) register output
-	signal ls : std_logic; -- load S
-	signal SzncoCznco : std_logic_vector(7 downto 0); -- set & clear status register flags
+	signal lSzncoCznco : std_logic_vector(8 downto 0); -- load status register & set & clear status register flags
 	signal spo : std_logic_vector(7 downto 0); -- stack pointer (SP) output
 	signal ldphpp : std_logic_vector(2 downto 0); -- load & push & pop SP
 	signal pco : std_logic_vector(15 downto 0); -- program counter (PC) output
@@ -128,8 +129,16 @@ architecture a0 of central_processing_unit is
 	signal alu_y : std_logic_vector(7 downto 0); -- alu y operand
 	signal alu_r : std_logic_vector(7 downto 0); -- alu result
 	signal alu_mx : std_logic; -- alu y operand mux select
+	-- memory
+	signal mo : std_logic_vector(7 downto 0); -- mem out
+	signal lm : std_logic; -- load mem (@ addr)
 	
 begin
+	debug_out <= "00000000000000000"; -- not needed (yet...)
+	mo <= data_bus_in;
+	data_bus_out <= data_bus;
+	memory_wren <= lm;
+	addr_bus_out <= addr_bus;
 
 	------------------8 bit processing logic-------------------------
 	-- accumulator
@@ -197,11 +206,10 @@ begin
 		data_bus <= ao when "000",
 						go when "001",
 						ho when "010",
-						memory_in when "011",
+						mo when "011",
 						xo when "100",
 						yo when "101",
 						"00000000" when others;
-	data_out <= data_bus;
 	
 	-- alu, y operand mux, and status register
 	ALU : component arithmetic_logic_unit port map
@@ -215,16 +223,18 @@ begin
 		cry => znco(1),
 		ovf => znco(0)
 	);
+	
 	with alu_mx select
 		alu_y <= yo when '0',
 					data_bus when '1',
 					"00000000" when others;
+	
 	S : component status_register port map
 	(
 		si	=> "0000" & znco,
 		so	=> so,
-		fsr => SzncoCznco,
-		ld	=> ls,
+		ld	=> lSzncoCznco(8),
+		fsc => lSzncoCznco(7 downto 0),
 		rs => rst,
 		clk => clk
 	);
@@ -235,9 +245,9 @@ begin
 		pi	=> xo,
 		po	=> spo,
 		ld	=> ldphpp(2),
-		rs => rst,
 		ph => ldphpp(1),
 		pp => ldphpp(0),
+		rs => rst,
 		clk => clk
 	);
 	------------------end 8 bit processing logic-------------------------
@@ -252,25 +262,24 @@ begin
 		rs => rst,
 		clk => clk
 	);
+
 	with addr_sel select
 		addr_bus <= pco when "00",
 						go & ho when "01",
 						"00000000" & spo when "10",
 						"0000000000000000" when others;
-	address_out <= addr_bus;
 	------------------end 16 bit addressing logic-------------------------
 	
 	------------------control logic-------------------------
 	IR : component instruction_register port map
 	(
-		ii	 => memory_in,
+		ii	 => mo,
 		io	 => iro,
 		ld	 => irldinc(1),
 		inc => irldinc(0),
 		rs  => rst,
 		clk => clk
 	);
-	current_instruction <= iro;
 	
 	------------------end control logic-------------------------
 	

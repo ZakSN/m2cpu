@@ -5,8 +5,8 @@ entity status_register is port
 (
 	si : out std_logic_vector(7 downto 0); 
 	so	: in std_logic_vector(7 downto 0);
-	fsr : in std_logic_vector(7 downto 0); -- flag set reset: set znco & clear znco
 	ld	: in std_logic;
+	fsc : in std_logic_vector(7 downto 0); -- flag set clear: set znco & clear znco
 	rs : in std_logic;
 	clk : in std_logic
 );

@@ -42,17 +42,6 @@ architecture a0 of m2cpu_top is
 	);
 	end component;
 	
-	component central_processing_unit is port
-	(
-		current_instruction : out std_logic_vector(7 downto 0);
-		memory_in : in std_logic_vector(7 downto 0); -- RAM interface
-		data_out : out std_logic_vector(7 downto 0); -- data bus
-		address_out : out std_logic_vector(15 downto 0); -- address bus
-		rst : in std_logic; -- global reset, all registers, PC, and FSM
-		clk : in std_logic
-	);
-	end component central_processing_unit;
-	
 	component clock_divider is port
 	(
 		clkin : in std_logic; --50MHz clock from the board
@@ -60,12 +49,27 @@ architecture a0 of m2cpu_top is
 		clkout : out std_logic --slow clock (human visible)
 	);
 	end component clock_divider;
+	
+	component central_processing_unit is port
+	(
+		-- bus names are from the processor's prespective
+		data_bus_in  : in std_logic_vector(7 downto 0);
+		data_bus_out : out std_logic_vector(7 downto 0);
+		addr_bus_out : out std_logic_vector(15 downto 0);
+		memory_wren  : out std_logic;
+		debug_out    : out std_logic_vector(15 downto 0); -- general purpose debug vector
+		rst : in std_logic; -- global reset, all registers, PC, and FSM
+		clk : in std_logic
+	);
+	end component central_processing_unit;
 
 ------------------signal section----------------------------
-	signal system_clock : std_logic;
-	signal memory_data : std_logic_vector(7 downto 0);
+	signal memory_in : std_logic_vector(7 downto 0);
+	signal memory_out : std_logic_vector(7 downto 0);
 	signal memory_address : std_logic_vector(15 downto 0);
-	signal cpu_data : std_logic_vector(7 downto 0);
+	signal memory_write : std_logic;
+	signal debug_bus : std_logic_vector(15 downto 0);
+	signal system_clock : std_logic;
 	signal reset : std_logic;
 	
 begin
@@ -83,44 +87,21 @@ begin
 	(
 		address	=> memory_address,
 		clock		=> system_clock,
-		data		=> "00000000",
+		data		=> memory_in,
 		rden		=> '1',
-		wren		=> '0', 
-		q			=> memory_data
+		wren		=> memory_write, 
+		q			=> memory_out
 	);
 	
-	cpu : component central_processing_unit port map
+	CPU : component central_processing_unit is port
 	(
-		current_instruction => LED(7 downto 0),
-		memory_in => memory_data,
-		data_out => cpu_data,
-		address_out => memory_address,
+		data_bus_in => memory_out,
+		data_bus_out => memory_in,
+		addr_bus_out => memory_address,
+		memory_wren => memory_write,
+		debug_out => debug_bus,
 		rst => reset,
-		clk => CLK50 --system_clock
-	);
-	
-	data_bus_display : component byte_display port map
-	(
-		byte_in => cpu_data,
-		d_point => "00",
-		hex_out_hi => HEX5,
-		hex_out_lo => HEX4
-	);
-	
-	addr_bus_display_hi : component byte_display port map
-	(
-		byte_in => memory_address(15 downto 8),
-		d_point => "00",
-		hex_out_hi => HEX3,
-		hex_out_lo => HEX2
-	);
-	
-	addr_bus_display_lo : component byte_display port map
-	(
-		byte_in => memory_address(7 downto 0),
-		d_point => "00",
-		hex_out_hi => HEX1,
-		hex_out_lo => HEX0
+		clk => system_clock
 	);
 
 end architecture a0;

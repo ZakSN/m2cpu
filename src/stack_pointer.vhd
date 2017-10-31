@@ -7,9 +7,9 @@ entity stack_pointer is port
 	pi	 : in std_logic_vector(7 downto 0); --pointer in
 	po	 : out std_logic_vector(7 downto 0); --pointer out
 	ld	 : in std_logic; --load (on rising edge)
-	rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 	ph  : in std_logic; --push (increment address)
 	pp  : in std_logic; --pop (decrement address)
+	rs  : in std_logic; --asynchronus reset (active high, resets to zero)
 	clk : in std_logic
 );
 end entity stack_pointer;
