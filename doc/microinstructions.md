@@ -1,0 +1,26 @@
+# Microinstruction Bit Pattern:
+### Control Lines:
+- `data_sel` (0 - 2)
+- `addr_sel` (3 - 4)
+- `alu_mx` (5)
+- `alu_op` (8 - 7)
+- `laab` (10 - 9)
+- `lgab` (12 - 11)
+- `lhab` (14 - 13)
+- `lxab` (16 - 15)
+- `lyab` (18 - 17)
+- `lm` (19)
+- `ldphpp` (22 - 20)
+- `pcldinc` (24 - 23)
+- `lSzncoCznco` (33 - 25)
+### Branch control:
+- BZS (34)
+- BZC (35)
+- BNS (36)
+- BNC (37)
+- BCS (38)
+- BCC (39)
+- BOS (40)
+- BOC (41)
+### Execute Control Bit:
+- exec control (42)

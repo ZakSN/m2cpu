@@ -76,7 +76,7 @@ Memory is outside of the processor. As such its interface inside the processor i
 
 ### ALU
 - control bits: `opr`
-- control vector: `opr` = add, sub, AND, NAND, OR, XOR, STL, STR
+- control vector: `alu_op` = add, sub, AND, NAND, OR, XOR, STL, STR
 - number: 3
 
-## control vector width: 32
+## control vector width: 34
