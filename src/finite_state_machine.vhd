@@ -1,52 +1,50 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use work.m2cpu_states.all;
 
 entity finite_state_machine is port
 (
-	-- bus control signals:
-	data_c : out std_logic_vector(2 downto 0);
-	addr_c : out std_logic_vector(1 downto 0);
-	-- GPR control signals:
-	aab_c : out std_logic_vector(1 downto 0);
-	gab_c : out std_logic_vector(1 downto 0);
-	hab_c : out std_logic_vector(1 downto 0);
-	xab_c : out std_logic_vector(1 downto 0);
-	yab_c : out std_logic_vector(1 downto 0);
-	-- SPR control signals:
-	s_c : out std_logic;
-	ldphpp_c : out std_logic_vector(2 downto 0);
-	ldinc_c : out std_logic_vector(1 downto 0);
-	ir_c : out std_logic;
-	-- ALU control signals:
-	alu_op_c : std_logic_vector(2 downto 0);
-	alu_mx_c : std_logic;
-	instruction : in std_logic_vector(7 downto 0); -- current instruction
-	status : in std_logic_vector(7 downto 0); -- processor status
-	rs : in std_logic;
-	clk : in std_logic
+	assert_pc      : out std_logic;
+	inc_pc         : out std_logic;
+	microcode_rden : out std_logic;
+	load_ir        : out std_logic;
+	inc_ir         : out std_logic;
+	exec_cont      : in std_logic;
+	rs             : in std_logic;
+	clk            : in std_logic
 );
 end entity finite_state_machine;
 
 architecture a0 of finite_state_machine is
 
+	type state is (FETCH, DECODE, EXECUTE, INCPC);
 	signal cur : control_state;
 	signal nxt : control_state;
 
 begin
-	transition_logic : process (cur)
+	transition_logic : process (cur, exec_cont)
 	begin
 		case cur is
-			when => LOAD_IR
+			when => FETCH
 				nxt <= DECODE;
-			when => 
+			when => DECODE
+				nxt <= EXECUTE;
+			when => EXECUTE
+				if (exec_cont = '1') then
+					nxt <= EXECUTE; -- more microcode to exec
+				else
+					nxt <= INCPC; -- insruction is done
+				end if;
+			when => INCPC
+				nxt <= FETCH;
+			when others =>
+				nxt <= cur;
 		end case;
 	end process;
 	
 	state_register : process (clk, rs)
 	begin
 		if (rs = '1') then
-			cur <= LOAD_IR;
+			cur <= FETCH;
 		elsif (rising_edge(clk)) then
 			cur <= nxt;
 		else
@@ -57,7 +55,36 @@ begin
 	decode_logic : process (cur)
 	begin
 		case cur is 
-			when =>
+			when => FETCH
+				assert_pc <= '1';
+				inc_pc <= '0';
+				microcode_rden <= '0';
+				load_ir <= '1'; -- load IR on next clk
+				inc_ir <= '0';
+			when => DECODE
+				assert_pc <= '1';
+				inc_pc <= '0';
+				microcode_rden <= '0';
+				load_ir <= '0'; -- caught this clk
+				inc_ir <= '0';
+			when => EXECUTE
+				assert_pc <= '0'; -- relinquish control over the address bus
+				inc_pc <= '0';
+				microcode_rden <= '1'; -- apply control signals
+				load_ir <= '0';
+				inc_ir <= '1'; -- increment IR on next clk
+			when => INCPC
+				assert_pc <= '1';
+				inc_pc <= '1'; -- does what it says on the tin
+				microcode_rden <= '0';
+				load_ir <= '0';
+				inc_ir <= '0';
+			when others => -- lock up the processor
+				assert_pc <= '1';
+				inc_pc <= '0';
+				microcode_rden <= '0';
+				load_ir <= '0';
+				inc_ir <= '0';
 		end case;
 	end process;
 
