@@ -3,7 +3,7 @@
 - `data_sel` (0 - 2)
 - `addr_sel` (3 - 4)
 - `alu_mx` (5)
-- `alu_op` (8 - 7)
+- `alu_op` (8 - 6)
 - `laab` (10 - 9)
 - `lgab` (12 - 11)
 - `lhab` (14 - 13)
