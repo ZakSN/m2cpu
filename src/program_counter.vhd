@@ -15,49 +15,29 @@ end entity program_counter;
 
 architecture a0 of program_counter is
 
-	component register_8bit is port
-	(
-		di	 : in std_logic_vector(7 downto 0); --data in
-		do	 : out std_logic_vector(7 downto 0); --data out
-		ld	 : in std_logic; --load (on rising edge)
-		rs  : in std_logic; --asynchronus reset (active high, resets to zero)
-		clk : in std_logic
-	);
-	end component register_8bit;
-	
-	signal addr_in : std_logic_vector(15 downto 0);
-	signal addr_out : std_logic_vector(15 downto 0);
+	signal d : std_logic_vector(15 downto 0);
 	signal li : std_logic_vector(1 downto 0);
-	signal ld_addr : std_logic;
 	
 begin
 
 	li <= ld & inc;
-	
-	with li select
-		addr_in <= ai when "10",
-					  std_logic_vector(unsigned(addr_out) + 1) when "01",
-					  "0000000000000000" when others;
 
-	ld_addr <= ld XOR inc;
-	
-	pc_hi : component register_8bit port map
-	(
-		di => addr_in(15 downto 8),
-		do => addr_out(15 downto 8),
-		ld => ld_addr,
-		rs => rs,
-		clk => clk
-	);
-	
-	pc_lo : component register_8bit port map
-	(
-		di => addr_in(7 downto 0),
-		do => addr_out(7 downto 0),
-		ld => ld_addr,
-		rs => rs,
-		clk => clk
-	);
+	pc_reg : process (clk, ld, rs)
+	begin
+		if (rs = '1') then
+			d <= "0000000000000100"; -- reset vector
+		elsif (rising_edge(clk)) then
+			if (li = "10") then
+				d <= ai; -- load new address
+			elsif (li = "01") then
+				d <= std_logic_vector(unsigned(d) + 1); -- increment
+			else
+				d <= d;
+			end if;
+		else
+			d <= d;
+		end if;
+	end process pc_reg;
 
-	ao <= addr_out;
+	ao <= d;
 end architecture a0;
