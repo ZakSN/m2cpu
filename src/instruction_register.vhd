@@ -41,7 +41,7 @@ begin
 
 	ld_inst <= ld XOR inc;
 	
-	ir : component register_8bit is port
+	ir : component register_8bit port map
 	(
 		di => inst_in,
 		do => inst_out,

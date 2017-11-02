@@ -93,7 +93,7 @@ begin
 		q			=> memory_out
 	);
 	
-	CPU : component central_processing_unit is port
+	CPU : component central_processing_unit port map
 	(
 		data_bus_in => memory_out,
 		data_bus_out => memory_in,

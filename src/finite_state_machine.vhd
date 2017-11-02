@@ -17,24 +17,24 @@ end entity finite_state_machine;
 architecture a0 of finite_state_machine is
 
 	type state is (FETCH, DECODE, EXECUTE, INCPC);
-	signal cur : control_state;
-	signal nxt : control_state;
+	signal cur : state;
+	signal nxt : state;
 
 begin
 	transition_logic : process (cur, exec_cont)
 	begin
 		case cur is
-			when => FETCH
+			when FETCH =>
 				nxt <= DECODE;
-			when => DECODE
+			when DECODE =>
 				nxt <= EXECUTE;
-			when => EXECUTE
+			when EXECUTE =>
 				if (exec_cont = '1') then
 					nxt <= EXECUTE; -- more microcode to exec
 				else
 					nxt <= INCPC; -- insruction is done
 				end if;
-			when => INCPC
+			when INCPC =>
 				nxt <= FETCH;
 			when others =>
 				nxt <= cur;
@@ -55,25 +55,25 @@ begin
 	decode_logic : process (cur)
 	begin
 		case cur is 
-			when => FETCH
+			when FETCH =>
 				assert_pc <= '1';
 				inc_pc <= '0';
 				microcode_rden <= '0';
 				load_ir <= '1'; -- load IR on next clk
 				inc_ir <= '0';
-			when => DECODE
+			when DECODE =>
 				assert_pc <= '1';
 				inc_pc <= '0';
 				microcode_rden <= '0';
 				load_ir <= '0'; -- caught this clk
 				inc_ir <= '0';
-			when => EXECUTE
+			when EXECUTE =>
 				assert_pc <= '0'; -- relinquish control over the address bus
 				inc_pc <= '0';
 				microcode_rden <= '1'; -- apply control signals
 				load_ir <= '0';
 				inc_ir <= '1'; -- increment IR on next clk
-			when => INCPC
+			when INCPC =>
 				assert_pc <= '1';
 				inc_pc <= '1'; -- does what it says on the tin
 				microcode_rden <= '0';

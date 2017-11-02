@@ -74,8 +74,8 @@ architecture a0 of central_processing_unit is
 
 	component status_register is port
 	(
-		si : out std_logic_vector(7 downto 0); 
-		so	: in std_logic_vector(7 downto 0);
+		si : in std_logic_vector(7 downto 0); 
+		so	: out std_logic_vector(7 downto 0);
 		ld	: in std_logic;
 		fsc : in std_logic_vector(7 downto 0); -- flag set clear: set znco & clear znco
 		rs : in std_logic;
@@ -154,7 +154,7 @@ architecture a0 of central_processing_unit is
 	signal pco : std_logic_vector(15 downto 0); -- program counter (PC) output
 	signal pcldinc : std_logic_vector(1 downto 0); -- load & increment PC
 	signal iro : std_logic_vector(7 downto 0); -- instruction register (IR) output
-	signal irldinc : std_logic; -- load IR & increment IR
+	signal irldinc : std_logic_vector(1 downto 0); -- load IR & increment IR
 	-- alu signals
 	signal alu_op : std_logic_vector(2 downto 0); -- alu operation code
 	signal znco : std_logic_vector(3 downto 0); -- alu status flag vector
@@ -172,7 +172,7 @@ architecture a0 of central_processing_unit is
 	signal addr_sel_in : std_logic_vector(1 downto 0);
 	
 begin
-	debug_out <= "00000000000000000"; -- not needed (yet...)
+	debug_out <= "0000000000000000"; -- not needed (yet...)
 	mo <= data_bus_in;
 	data_bus_out <= data_bus;
 	memory_wren <= lm;
@@ -337,10 +337,10 @@ begin
 	BD : component branch_decoder port map
 	(
 		status_in => so,
-		branch_in => uins_bus(41 downto 34); -- microinstruction branch bits
-		ins_incpc => uins_bus(23) -- microinstruction increment pc bit
+		branch_in => uins_bus(41 downto 34), -- microinstruction branch bits
+		ins_incpc => uins_bus(23), -- microinstruction increment pc bit
 		fsm_incpc => fsm_incpc,
-		increment_pc => pcldinc(1)
+		increment_pc => pcldinc(0)
 	);
 
 	MCR : component microcode_rom port map
@@ -356,7 +356,7 @@ begin
 	-- but I think it makes things a little more readable
 
 	data_sel <= uins_bus(2 downto 0);
-	addr_sel_in <= uins_bus(3 downto 4);
+	addr_sel_in <= uins_bus(4 downto 3);
 	alu_mx <= uins_bus(5);
 	alu_op <= uins_bus(8 downto 6);
 	laab <= uins_bus(10 downto 9);
@@ -366,7 +366,7 @@ begin
 	lyab <= uins_bus(18 downto 17);
 	lm <= uins_bus(19);
 	ldphpp <= uins_bus(22 downto 20);
-	pcldinc(1) <= uins_bus(24) -- increment PC goes through the branch decoder
+	pcldinc(1) <= uins_bus(24); -- increment PC goes through the branch decoder
 	lSzncoCznco <= uins_bus(33 downto 25);
 
 	-- the other control signals are routed directly
