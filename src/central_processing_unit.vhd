@@ -71,7 +71,7 @@ architecture a0 of central_processing_unit is
 		clk : in std_logic
 	);
 	end component general_purpose_register;
-	
+
 	component status_register is port
 	(
 		si : out std_logic_vector(7 downto 0); 
@@ -82,7 +82,7 @@ architecture a0 of central_processing_unit is
 		clk : in std_logic
 	);
 	end component status_register;
-	
+
 	component instruction_register is port
 	(
 		ii	 : in std_logic_vector(7 downto 0); -- instruction in
@@ -93,7 +93,39 @@ architecture a0 of central_processing_unit is
 		clk : in std_logic
 	);
 	end component instruction_register;
-	
+
+	component finite_state_machine is port
+	(
+		assert_pc      : out std_logic;
+		inc_pc         : out std_logic;
+		microcode_rden : out std_logic;
+		load_ir        : out std_logic;
+		inc_ir         : out std_logic;
+		exec_cont      : in std_logic;
+		rs             : in std_logic;
+		clk            : in std_logic
+	);
+	end component finite_state_machine;
+
+	component branch_decoder is port
+	(
+		status_in : in std_logic_vector(7 downto 0); -- X, X, X, X, Z, N, C, O
+		branch_in : in std_logic_vector(7 downto 0); -- BOC, BOS, BCC, BCS, BNC, BNS, BZC, BZS
+		ins_incpc : in std_logic; -- from microinstruction
+		fsm_incpc : in std_logic; -- from FSM
+		increment_pc : out std_logic
+	);
+	end component branch_decoder;
+
+	component microcode_rom is port
+	(
+		address		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		clock		: IN STD_LOGIC  := '1';
+		rden		: IN STD_LOGIC  := '1';
+		q		: OUT STD_LOGIC_VECTOR (47 DOWNTO 0)
+	);
+	end component microcode_rom;
+
 	------------------signal section-------------------------
 	-- busses and bus selects
 	signal data_bus : std_logic_vector(7 downto 0);
@@ -132,6 +164,12 @@ architecture a0 of central_processing_unit is
 	-- memory
 	signal mo : std_logic_vector(7 downto 0); -- mem out
 	signal lm : std_logic; -- load mem (@ addr)
+	-- control logic signals:
+	signal uins_bus : std_logic_vector(47 downto 0); -- microinstruction bus
+	signal ucode_rden : std_logic; -- microcode read enable
+	signal fsm_addr_sel_override : std_logic;
+	signal fsm_incpc : std_logic;
+	signal addr_sel_in : std_logic_vector(1 downto 0);
 	
 begin
 	debug_out <= "00000000000000000"; -- not needed (yet...)
@@ -282,7 +320,58 @@ begin
 	);
 	
 	-- address select override
-	addr_sel <= "00" when fsm_override = '1' else addr_sel_in;
+	addr_sel <= "00" when fsm_addr_sel_override = '1' else addr_sel_in;
+
+	FSM : component finite_state_machine port map
+	(
+		assert_pc => fsm_addr_sel_override,
+		inc_pc => fsm_incpc,
+		microcode_rden => ucode_rden,
+		load_ir => irldinc(1),
+		inc_ir => irldinc(0),
+		exec_cont => uins_bus(42),
+		rs => rst,
+		clk => clk
+	);
+
+	BD : component branch_decoder port map
+	(
+		status_in => so,
+		branch_in => uins_bus(41 downto 34); -- microinstruction branch bits
+		ins_incpc => uins_bus(23) -- microinstruction increment pc bit
+		fsm_incpc => fsm_incpc,
+		increment_pc => pcldinc(1)
+	);
+
+	MCR : component microcode_rom port map
+	(
+		address => iro, -- instruction register provides microcode address
+		clock => clk,
+		rden => ucode_rden,
+		q => uins_bus
+	);
+
+	-- connect microinstruction bus to control bits.
+	-- this bit is a little awkward, 
+	-- but I think it makes things a little more readable
+
+	data_sel <= uins_bus(2 downto 0);
+	addr_sel_in <= uins_bus(3 downto 4);
+	alu_mx <= uins_bus(5);
+	alu_op <= uins_bus(8 downto 6);
+	laab <= uins_bus(10 downto 9);
+	lgab <= uins_bus(12 downto 11);
+	lhab <= uins_bus(14 downto 13);
+	lxab <= uins_bus(16 downto 15);
+	lyab <= uins_bus(18 downto 17);
+	lm <= uins_bus(19);
+	ldphpp <= uins_bus(22 downto 20);
+	pcldinc(1) <= uins_bus(24) -- increment PC goes through the branch decoder
+	lSzncoCznco <= uins_bus(33 downto 25);
+
+	-- the other control signals are routed directly
+	-- the above signals could be, however I think the above routing makes the 
+	-- microcode more self-documenting... I might change this in a future commit
 	------------------end control logic-------------------------
-	
+
 end architecture a0;
