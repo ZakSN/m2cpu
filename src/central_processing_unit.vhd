@@ -281,6 +281,8 @@ begin
 		clk => clk
 	);
 	
+	-- address select override
+	addr_sel <= "00" when fsm_override = '1' else addr_sel_in;
 	------------------end control logic-------------------------
 	
 end architecture a0;
