@@ -1,7 +1,7 @@
 # Microinstruction Bit Pattern:
 ### Control Lines:
-- `data_sel` (0 - 2)
-- `addr_sel` (3 - 4)
+- `data_sel` (2 - 0)
+- `addr_sel` (4 - 3)
 - `alu_mx` (5)
 - `alu_op` (8 - 6)
 - `laab` (10 - 9)
