@@ -8,7 +8,7 @@ entity central_processing_unit is port
 	data_bus_out : out std_logic_vector(7 downto 0);
 	addr_bus_out : out std_logic_vector(15 downto 0);
 	memory_wren  : out std_logic;
-	debug_out    : out std_logic_vector(15 downto 0); -- general purpose debug vector
+	debug_out    : out std_logic_vector(23 downto 0); -- general purpose debug vector
 	rst : in std_logic; -- global reset, all registers, PC, and FSM
 	clk : in std_logic
 );
@@ -172,7 +172,7 @@ architecture a0 of central_processing_unit is
 	signal addr_sel_in : std_logic_vector(1 downto 0);
 	
 begin
-	debug_out <= "0000000000000000"; -- not needed (yet...)
+	debug_out <= go & pco;
 	mo <= data_bus_in;
 	data_bus_out <= data_bus;
 	memory_wren <= lm;

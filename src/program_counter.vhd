@@ -25,7 +25,7 @@ begin
 	pc_reg : process (clk, ld, rs)
 	begin
 		if (rs = '1') then
-			d <= "0000000000000100"; -- reset vector
+			d <= "0000000100000000"; -- reset vector
 		elsif (rising_edge(clk)) then
 			if (li = "10") then
 				d <= ai; -- load new address

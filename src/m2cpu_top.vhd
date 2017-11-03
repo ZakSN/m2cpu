@@ -57,7 +57,7 @@ architecture a0 of m2cpu_top is
 		data_bus_out : out std_logic_vector(7 downto 0);
 		addr_bus_out : out std_logic_vector(15 downto 0);
 		memory_wren  : out std_logic;
-		debug_out    : out std_logic_vector(15 downto 0); -- general purpose debug vector
+		debug_out    : out std_logic_vector(23 downto 0); -- general purpose debug vector
 		rst : in std_logic; -- global reset, all registers, PC, and FSM
 		clk : in std_logic
 	);
@@ -68,7 +68,7 @@ architecture a0 of m2cpu_top is
 	signal memory_out : std_logic_vector(7 downto 0);
 	signal memory_address : std_logic_vector(15 downto 0);
 	signal memory_write : std_logic;
-	signal debug_bus : std_logic_vector(15 downto 0);
+	signal debug_bus : std_logic_vector(23 downto 0);
 	signal system_clock : std_logic;
 	signal reset : std_logic;
 	
@@ -102,6 +102,30 @@ begin
 		debug_out => debug_bus,
 		rst => reset,
 		clk => system_clock
+	);
+	
+	data_disp : component byte_display port map
+	(
+		byte_in => debug_bus(23 downto 16),
+		d_point => "01",
+		hex_out_hi => HEX5,
+		hex_out_lo => HEX4
+	);
+	
+	addr_disp_hi : component byte_display port map
+	(
+		byte_in => debug_bus(15 downto 8),
+		d_point => "00",
+		hex_out_hi => HEX3,
+		hex_out_lo => HEX2
+	);
+	
+	addr_disp_lo : component byte_display port map
+	(
+		byte_in => debug_bus(7 downto 0),
+		d_point => "00",
+		hex_out_hi => HEX1,
+		hex_out_lo => HEX0
 	);
 
 end architecture a0;
