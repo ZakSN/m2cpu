@@ -93,7 +93,7 @@ Extensive description of each instruction. This is the machine code. Utilisation
 - list: LDGH PC, LDPC GH
 - microcode: two state instruction
 	- state 1: select [rr] with address bus mux. assert load line(s) 
-		on [qq].
+		on [qq] (`lb` on GH, and `lm` on PC).
 	- state 2: unassert load line on [qq].
 - number: 2
 
@@ -154,8 +154,8 @@ Extensive description of each instruction. This is the machine code. Utilisation
 - microcode: three state instruction
 	- state 1: assert `ph` line on stack pointer
 	- state 2: select [q] on data bus mux. select stack pointer on
-			 address bus mux. assert `wren` line on memory.
-	- state 3: unassert `wren` line on memory.
+			 address bus mux. assert `lm` line on memory.
+	- state 3: select [q] on data bus mux, select SP on address bus mux.
 - number: 5
 
 ### Pop General Purpose Register From Stack:
@@ -168,7 +168,7 @@ Extensive description of each instruction. This is the machine code. Utilisation
 	- state 1: assert `pp` line on stack pointer
 	- state 2: select memory on data bus mux. select stack pointer on
 			 address bus mux. assert `la` line on [q].
-	- state 3: unassert `la` line on [q].
+	- state 3: select M on data bus mux, select SP on address bus mux.
 - number: 5
 
 ### Register ALU Operation:
