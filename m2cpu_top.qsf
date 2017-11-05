@@ -137,7 +137,6 @@ set_global_assignment -name VHDL_FILE src/program_counter.vhd
 set_global_assignment -name VHDL_FILE src/byte_display.vhd
 set_global_assignment -name VHDL_FILE src/clock_divider.vhd
 set_global_assignment -name VHDL_FILE src/finite_state_machine.vhd
-set_global_assignment -name HEX_FILE src/test_data.hex
 set_global_assignment -name ENABLE_OCT_DONE ON
 set_global_assignment -name EXTERNAL_FLASH_FALLBACK_ADDRESS 00000000
 set_global_assignment -name STRATIXV_CONFIGURATION_SCHEME "PASSIVE SERIAL"
