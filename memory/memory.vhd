@@ -46,7 +46,6 @@ ENTITY memory IS
 		address		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
 		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
-		rden		: IN STD_LOGIC  := '1';
 		wren		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
@@ -64,7 +63,7 @@ BEGIN
 	GENERIC MAP (
 		clock_enable_input_a => "BYPASS",
 		clock_enable_output_a => "BYPASS",
-		init_file => "../memory/memory_data.hex",
+		init_file => "../src/test_data.hex",
 		intended_device_family => "MAX 10",
 		lpm_hint => "ENABLE_RUNTIME_MOD=NO",
 		lpm_type => "altsyncram",
@@ -82,7 +81,6 @@ BEGIN
 		address_a => address,
 		clock0 => clock,
 		data_a => data,
-		rden_a => rden,
 		wren_a => wren,
 		q_a => sub_wire0
 	);
@@ -126,7 +124,7 @@ END SYN;
 -- Retrieval info: PRIVATE: WRCONTROL_ACLR_A NUMERIC "0"
 -- Retrieval info: PRIVATE: WidthAddr NUMERIC "16"
 -- Retrieval info: PRIVATE: WidthData NUMERIC "8"
--- Retrieval info: PRIVATE: rden NUMERIC "1"
+-- Retrieval info: PRIVATE: rden NUMERIC "0"
 -- Retrieval info: LIBRARY: altera_mf altera_mf.altera_mf_components.all
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_INPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
@@ -147,12 +145,10 @@ END SYN;
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT VCC "clock"
 -- Retrieval info: USED_PORT: data 0 0 8 0 INPUT NODEFVAL "data[7..0]"
 -- Retrieval info: USED_PORT: q 0 0 8 0 OUTPUT NODEFVAL "q[7..0]"
--- Retrieval info: USED_PORT: rden 0 0 0 0 INPUT VCC "rden"
 -- Retrieval info: USED_PORT: wren 0 0 0 0 INPUT NODEFVAL "wren"
 -- Retrieval info: CONNECT: @address_a 0 0 16 0 address 0 0 16 0
 -- Retrieval info: CONNECT: @clock0 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @data_a 0 0 8 0 data 0 0 8 0
--- Retrieval info: CONNECT: @rden_a 0 0 0 0 rden 0 0 0 0
 -- Retrieval info: CONNECT: @wren_a 0 0 0 0 wren 0 0 0 0
 -- Retrieval info: CONNECT: q 0 0 8 0 @q_a 0 0 8 0
 -- Retrieval info: GEN_FILE: TYPE_NORMAL memory.vhd TRUE
