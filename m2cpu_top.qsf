@@ -127,7 +127,6 @@ set_global_assignment -name VHDL_FILE src/central_processing_unit.vhd
 set_global_assignment -name VHDL_FILE src/general_purpose_register.vhd
 set_global_assignment -name SOURCE_FILE memory/memory.cmp
 set_global_assignment -name QIP_FILE memory/memory.qip
-set_global_assignment -name VHDL_FILE memory/memory.vhd
 set_global_assignment -name VHDL_FILE src/m2cpu_top.vhd
 set_global_assignment -name VHDL_FILE src/seven_seg_decoder.vhd
 set_global_assignment -name VHDL_FILE src/register_8bit.vhd

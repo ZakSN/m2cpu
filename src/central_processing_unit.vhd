@@ -9,8 +9,10 @@ entity central_processing_unit is port
 	addr_bus_out : out std_logic_vector(15 downto 0);
 	memory_wren  : out std_logic;
 	debug_out    : out std_logic_vector(23 downto 0); -- general purpose debug vector
+	debug_out_1  : out std_logic_vector(7 downto 0);
 	rst : in std_logic; -- global reset, all registers, PC, and FSM
-	clk : in std_logic
+	clk : in std_logic;
+	rom_clk : in std_logic
 );
 end entity central_processing_unit;
 
@@ -98,7 +100,7 @@ architecture a0 of central_processing_unit is
 	(
 		assert_pc      : out std_logic;
 		inc_pc         : out std_logic;
-		microcode_rden : out std_logic;
+		inc_block		: out std_logic;
 		load_ir        : out std_logic;
 		inc_ir         : out std_logic;
 		exec_cont      : in std_logic;
@@ -121,7 +123,6 @@ architecture a0 of central_processing_unit is
 	(
 		address		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
-		rden		: IN STD_LOGIC  := '1';
 		q		: OUT STD_LOGIC_VECTOR (47 DOWNTO 0)
 	);
 	end component microcode_rom;
@@ -166,13 +167,15 @@ architecture a0 of central_processing_unit is
 	signal lm : std_logic; -- load mem (@ addr)
 	-- control logic signals:
 	signal uins_bus : std_logic_vector(47 downto 0); -- microinstruction bus
-	signal ucode_rden : std_logic; -- microcode read enable
 	signal fsm_addr_sel_override : std_logic;
 	signal fsm_incpc : std_logic;
+	signal fsm_inc_block : std_logic;
 	signal addr_sel_in : std_logic_vector(1 downto 0);
+	signal uins_incpc_blocked : std_logic;
+	-- signal ucode_out : std_logic_vector(47 downto 0);
 	
 begin
-	debug_out <= go & pco;
+	debug_out <= iro & pco;
 	mo <= data_bus_in;
 	data_bus_out <= data_bus;
 	memory_wren <= lm;
@@ -326,19 +329,20 @@ begin
 	(
 		assert_pc => fsm_addr_sel_override,
 		inc_pc => fsm_incpc,
-		microcode_rden => ucode_rden,
+		inc_block => fsm_inc_block,
 		load_ir => irldinc(1),
 		inc_ir => irldinc(0),
 		exec_cont => uins_bus(42),
 		rs => rst,
 		clk => clk
 	);
-
+	
+	uins_incpc_blocked <= fsm_inc_block AND uins_bus(23);
 	BD : component branch_decoder port map
 	(
 		status_in => so,
 		branch_in => uins_bus(41 downto 34), -- microinstruction branch bits
-		ins_incpc => uins_bus(23), -- microinstruction increment pc bit
+		ins_incpc => uins_incpc_blocked, -- microinstruction increment pc bit
 		fsm_incpc => fsm_incpc,
 		increment_pc => pcldinc(0)
 	);
@@ -346,9 +350,8 @@ begin
 	MCR : component microcode_rom port map
 	(
 		address => iro, -- instruction register provides microcode address
-		clock => clk,
-		rden => ucode_rden,
-		q => uins_bus
+		clock => rom_clk,
+		q => uins_bus --ucode_out
 	);
 
 	-- connect microinstruction bus to control bits.
@@ -365,10 +368,17 @@ begin
 	lxab <= uins_bus(16 downto 15);
 	lyab <= uins_bus(18 downto 17);
 	lm <= uins_bus(19);
-	ldphpp <= uins_bus(22 downto 20);
+	
+	ldphpp(2) <= uins_bus(22);
+	ldphpp(1) <= fsm_inc_block AND uins_bus(21);
+	ldphpp(0) <= fsm_inc_block AND uins_bus(20);
+	
 	pcldinc(1) <= uins_bus(24); -- increment PC goes through the branch decoder
 	lSzncoCznco <= uins_bus(33 downto 25);
 
+	
+	debug_out_1(0) <= uins_bus(42);
+	debug_out_1(1) <= fsm_incpc;
 	-- the other control signals are routed directly
 	-- the above signals could be, however I think the above routing makes the 
 	-- microcode more self-documenting... I might change this in a future commit

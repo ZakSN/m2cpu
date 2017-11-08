@@ -57,8 +57,10 @@ architecture a0 of m2cpu_top is
 		addr_bus_out : out std_logic_vector(15 downto 0);
 		memory_wren  : out std_logic;
 		debug_out    : out std_logic_vector(23 downto 0); -- general purpose debug vector
+		debug_out_1  : out std_logic_Vector(7 downto 0);
 		rst : in std_logic; -- global reset, all registers, PC, and FSM
-		clk : in std_logic
+		clk : in std_logic;
+		rom_clk : in std_logic
 	);
 	end component central_processing_unit;
 	
@@ -133,8 +135,10 @@ begin
 		addr_bus_out => cpu_addr_bus_out,
 		memory_wren  => cpu_mem_wren,
 		debug_out    => cpu_debug_out,
+		debug_out_1  => LED(7 downto 0),
 		rst => NOT(EXEC_PROG),
-		clk => sys_clk
+		clk => sys_clk,
+		rom_clk => CLK50
 	);
 	
 	addr_shift : component address_shift_register port map
@@ -147,7 +151,7 @@ begin
 	MEM : component memory port map
 	(
 		address	=> mem_addr_bus_in,
-		clock		=> mem_clk,
+		clock		=> CLK50, --mem_clk,
 		data		=> mem_data_bus_in,
 		wren		=> mem_mem_wren,
 		q			=> mem_data_bus_out
@@ -160,7 +164,7 @@ begin
 	clk_div : component clock_divider port map
 	(
 		clkin => CLK50,
-		rst => '0',
+		rst => NOT(EXEC_PROG),
 		clkout => slow_clk
 	);
 	
@@ -168,7 +172,7 @@ begin
 	with  clk_sel select
 		sys_clk <= '0' when "00",
 					  slow_clk when "10",
-					  CLK50 when "11",
+					  ndkey(1) when "11",
 					  '0' when others;
 	mem_clk <= CLK50 when EXEC_PROG = '0' else sys_clk;
 	

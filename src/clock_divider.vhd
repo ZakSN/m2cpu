@@ -12,37 +12,48 @@ end entity clock_divider;
 
 architecture a0 of clock_divider is
 
-	signal count : unsigned(0 to 31);
-	signal stop :   std_logic;
-	constant MainFreq : integer := 25000000; -- ~1Hz
+	constant q_sec : integer := 25000000; -- quarter of a second
+	signal clk_count : unsigned(31 downto 0);
+	signal q_sec_pulse : std_logic;
+	
+	signal tq : std_logic;
 
 begin
 
-	counter: process (clkin, rst)
+	quarter_second_counter : process (clkin, rst)
 	begin
-	if (rst = '1') then
-		count <= to_unsigned(MainFreq, 32);
-		stop <= '0';
-	elsif (rising_edge(clkin)) then
-		if(count = 0) then
-			--reset count to 50m
-			count <= to_unsigned(MainFreq, 32);
-			stop <= '1';
+		if (rst = '1') then
+			clk_count <= to_unsigned(0, 32);
+			q_sec_pulse <= '0';
+		elsif (rising_edge(clkin)) then
+			if (clk_count = to_unsigned(q_sec, 31)) then
+				clk_count <= to_unsigned(0, 32);
+				q_sec_pulse <= '1';
+			else
+				clk_count <= clk_count + 1;
+				q_sec_pulse <= '0';
+			end if;
 		else
-			count <= count - 1;
-			stop <= '0';
+			clk_count <= clk_count;
+			q_sec_pulse <= q_sec_pulse;
 		end if;
-	else
-			count <= count;
-			stop <= stop;
-		end if;
-	end process;
-
-	clkout_gen: process(clkin)
+	end process quarter_second_counter;
+	
+	tff : process (q_sec_pulse, rst)
 	begin
-		if(rising_edge(clkin)) then
-			clkout <= stop;
+		if (rst = '1') then
+			tq <= '0';
+		elsif (rising_edge(q_sec_pulse)) then
+			if (tq = '0') then
+				tq <= '1';
+			else
+				tq <= '0';
+			end if;
+		else
+			tq <= tq;
 		end if;
-	end process;
+	end process tff;
+	
+	clkout <= tq;
 
 end architecture a0;
