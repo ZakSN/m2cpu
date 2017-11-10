@@ -12,7 +12,6 @@ entity central_processing_unit is port
 	debug_out_1  : out std_logic_vector(7 downto 0);
 	rst : in std_logic; -- global reset, all registers, PC, and FSM
 	clk : in std_logic;
-	rom_clk : in std_logic
 );
 end entity central_processing_unit;
 

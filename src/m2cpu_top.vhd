@@ -14,12 +14,6 @@ entity m2cpu_top is port
 	HEX3		: out std_logic_vector (7 downto 0);
 	HEX4		: out std_logic_vector (7 downto 0);
 	HEX5		: out std_logic_vector (7 downto 0);
-	
-	address : in std_logic_vector(15 downto 0);
-	data : in std_logic_vector(7 downto 0);
-	wren : in std_logic;
-	q : out std_logic_vector(7 downto 0);
-	
    CLK50    : in std_logic --system clock
 );
 end entity m2cpu_top;
@@ -55,21 +49,6 @@ architecture a0 of m2cpu_top is
 	);
 	end component clock_divider;
 	
-	component central_processing_unit is port
-	(
-		-- bus names are from the processor's prespective
-		data_bus_in  : in std_logic_vector(7 downto 0);
-		data_bus_out : out std_logic_vector(7 downto 0);
-		addr_bus_out : out std_logic_vector(15 downto 0);
-		memory_wren  : out std_logic;
-		debug_out    : out std_logic_vector(23 downto 0); -- general purpose debug vector
-		debug_out_1  : out std_logic_Vector(7 downto 0);
-		rst : in std_logic; -- global reset, all registers, PC, and FSM
-		clk : in std_logic;
-		rom_clk : in std_logic
-	);
-	end component central_processing_unit;
-	
 	component address_shift_register is port
 	(
 		byte_in : in std_logic_vector(7 downto 0);
@@ -85,6 +64,19 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component debouncer;
+	
+	component central_processing_unit is port
+	(
+		-- bus names are from the processor's prespective
+		data_bus_in  : in std_logic_vector(7 downto 0);
+		data_bus_out : out std_logic_vector(7 downto 0);
+		addr_bus_out : out std_logic_vector(15 downto 0);
+		memory_wren  : out std_logic;
+		debug_out    : out std_logic_vector(31 downto 0); -- four byte debug vector 
+		rst : in std_logic; -- global reset, all registers, PC, and FSM
+		clk : in std_logic;
+	);
+	end component central_processing_unit;
 
 ------------------signal section----------------------------
 	signal sys_clk : std_logic; -- system clock
@@ -109,7 +101,7 @@ architecture a0 of m2cpu_top is
 	signal slow_clk : std_logic;
 	signal clk_sel : std_logic_vector(1 downto 0);
 	
-	signal disp_bus : std_logic_vector(23 downto 0);
+	signal disp_bus : std_logic_vector(31 downto 0);
 	
 begin
 
@@ -134,19 +126,6 @@ begin
 	LED(8) <= sys_clk; -- shows clock speed
 	LED(9) <= EXEC_PROG; -- light on when executing
 	
-	CPU : component central_processing_unit port map
-	(
-		data_bus_in  => mem_data_bus_out,
-		data_bus_out => cpu_data_bus_out,
-		addr_bus_out => cpu_addr_bus_out,
-		memory_wren  => cpu_mem_wren,
-		debug_out    => cpu_debug_out,
-		debug_out_1  => LED(7 downto 0),
-		rst => NOT(EXEC_PROG),
-		clk => sys_clk,
-		rom_clk => CLK50
-	);
-	
 	addr_shift : component address_shift_register port map
 	(
 		byte_in => SW(7 downto 0),
@@ -154,25 +133,36 @@ begin
 		shift => ndkey(1)
 	);
 	
-	MEM : component memory port map
-	(
-		address	=> address, --mem_addr_bus_in,
-		clock		=> CLK50, --mem_clk,
-		data		=> data, --mem_data_bus_in,
-		wren		=> wren, --mem_mem_wren,
-		q			=> q --mem_data_bus_out
-	);
-	
-	mem_addr_bus_in <= control_addr_bus_out when EXEC_PROG = '0' else cpu_addr_bus_out;
-	mem_data_bus_in <= SW(7 downto 0) when EXEC_PROG = '0' else cpu_data_bus_out;
-	mem_mem_wren <= ndkey(0) when EXEC_PROG = '0' else cpu_mem_wren;
-	
 	clk_div : component clock_divider port map
 	(
 		clkin => CLK50,
 		rst => NOT(EXEC_PROG),
 		clkout => slow_clk
 	);
+	
+	MEM : component memory port map
+	(
+		address	=> mem_addr_bus_in,
+		clock		=> mem_clk,
+		data		=> mem_data_bus_in,
+		wren		=> mem_mem_wren,
+		q			=> mem_data_bus_out
+	);
+	
+	CPU : component central_processing_unit port map
+	(
+		data_bus_in  => mem_date_bus_out,
+		data_bus_out => cpu_data_bus_out,
+		addr_bus_out => cpu_addr_bus_out,
+		memory_wren  => cpu_mem_wren,
+		debug_out    => disp_bus,
+		rst => NOT(EXEC_PROG),
+		clk => sys_clk
+	);
+	
+	mem_addr_bus_in <= control_addr_bus_out when EXEC_PROG = '0' else cpu_addr_bus_out;
+	mem_data_bus_in <= SW(7 downto 0) when EXEC_PROG = '0' else cpu_data_bus_out;
+	mem_mem_wren <= ndkey(0) when EXEC_PROG = '0' else cpu_mem_wren;
 	
 	clk_sel <= EXEC_PROG & FULL_SLOW;
 	with  clk_sel select
@@ -182,7 +172,9 @@ begin
 					  '0' when others;
 	mem_clk <= CLK50 when EXEC_PROG = '0' else sys_clk;
 	
-	disp_bus <= mem_data_bus_out & control_addr_bus_out when EXEC_PROG = '0' else cpu_debug_out;
+	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when EXEC_PROG = '0' else cpu_debug_out;
+	
+	LED(7 downto 0) <= disp_bus(31 downto 24);
 	
 	byte_disp : component byte_display port map
 	(
