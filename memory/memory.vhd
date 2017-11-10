@@ -155,5 +155,5 @@ END SYN;
 -- Retrieval info: GEN_FILE: TYPE_NORMAL memory.inc FALSE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL memory.cmp TRUE
 -- Retrieval info: GEN_FILE: TYPE_NORMAL memory.bsf FALSE
--- Retrieval info: GEN_FILE: TYPE_NORMAL memory_inst.vhd TRUE
+-- Retrieval info: GEN_FILE: TYPE_NORMAL memory_inst.vhd FALSE
 -- Retrieval info: LIB_FILE: altera_mf

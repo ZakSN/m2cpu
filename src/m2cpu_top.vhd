@@ -14,6 +14,12 @@ entity m2cpu_top is port
 	HEX3		: out std_logic_vector (7 downto 0);
 	HEX4		: out std_logic_vector (7 downto 0);
 	HEX5		: out std_logic_vector (7 downto 0);
+	
+	address : in std_logic_vector(15 downto 0);
+	data : in std_logic_vector(7 downto 0);
+	wren : in std_logic;
+	q : out std_logic_vector(7 downto 0);
+	
    CLK50    : in std_logic --system clock
 );
 end entity m2cpu_top;
@@ -150,11 +156,11 @@ begin
 	
 	MEM : component memory port map
 	(
-		address	=> mem_addr_bus_in,
+		address	=> address, --mem_addr_bus_in,
 		clock		=> CLK50, --mem_clk,
-		data		=> mem_data_bus_in,
-		wren		=> mem_mem_wren,
-		q			=> mem_data_bus_out
+		data		=> data, --mem_data_bus_in,
+		wren		=> wren, --mem_mem_wren,
+		q			=> q --mem_data_bus_out
 	);
 	
 	mem_addr_bus_in <= control_addr_bus_out when EXEC_PROG = '0' else cpu_addr_bus_out;
