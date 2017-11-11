@@ -4,7 +4,7 @@ use ieee.std_logic_1164.all;
 entity branch_decoder is port
 (
 	status_in : in std_logic_vector(7 downto 0); -- X, X, X, X, Z, N, C, O
-	branch_in : in std_logic_vector(7 downto 0); -- BOC, BOS, BCC, BCS, BNC, BNS, BZC, BZS
+	branch_in : in std_logic_vector(7 downto 0); -- BZC, BZS, BNC, BNS, BCC, BCS, BOC, BOS
 	ins_incpc : in std_logic; -- from microinstruction
 	fsm_incpc : in std_logic; -- from FSM
 	increment_pc : out std_logic
@@ -18,14 +18,14 @@ architecture a0 of branch_decoder is
 
 begin
 
-	status(7) <= NOT(status_in(0));
-	status(6) <= status_in(0);
-	status(5) <= NOT(status_in(1));
-	status(4) <= status_in(1);
-	status(3) <= NOT(status_in(2));
-	status(2) <= status_in(2);
-	status(1) <= NOT(status_in(3));
-	status(0) <= status_in(3);
+	status(7) <= NOT(status_in(3));
+	status(6) <= status_in(3);
+	status(5) <= NOT(status_in(2));
+	status(4) <= status_in(2);
+	status(3) <= NOT(status_in(1));
+	status(2) <= status_in(1);
+	status(1) <= NOT(status_in(0));
+	status(0) <= status_in(0);
 
 	inc <= status AND branch_in;
 
