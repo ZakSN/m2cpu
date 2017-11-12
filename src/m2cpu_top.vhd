@@ -74,7 +74,7 @@ architecture a0 of m2cpu_top is
 		memory_wren  : out std_logic;
 		debug_out    : out std_logic_vector(31 downto 0); -- four byte debug vector 
 		rst : in std_logic; -- global reset, all registers, PC, and FSM
-		clk : in std_logic;
+		clk : in std_logic
 	);
 	end component central_processing_unit;
 
@@ -88,7 +88,7 @@ architecture a0 of m2cpu_top is
 	signal cpu_data_bus_out : std_logic_vector(7 downto 0);
 	signal cpu_addr_bus_out : std_logic_vector(15 downto 0);
 	signal cpu_mem_wren : std_logic;
-	signal cpu_debug_out : std_logic_vector(23 downto 0);
+	signal cpu_debug_out : std_logic_vector(31 downto 0);
 	
 	signal control_addr_bus_out : std_logic_vector(15 downto 0);
 	
@@ -151,11 +151,11 @@ begin
 	
 	CPU : component central_processing_unit port map
 	(
-		data_bus_in  => mem_date_bus_out,
+		data_bus_in  => mem_data_bus_out,
 		data_bus_out => cpu_data_bus_out,
 		addr_bus_out => cpu_addr_bus_out,
 		memory_wren  => cpu_mem_wren,
-		debug_out    => disp_bus,
+		debug_out    => cpu_debug_out,
 		rst => NOT(EXEC_PROG),
 		clk => sys_clk
 	);

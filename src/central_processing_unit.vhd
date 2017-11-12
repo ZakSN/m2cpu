@@ -10,7 +10,7 @@ entity central_processing_unit is port
 	memory_wren  : out std_logic;
 	debug_out    : out std_logic_vector(31 downto 0); -- four byte debug vector 
 	rst : in std_logic; -- global reset, all registers, PC, and FSM
-	clk : in std_logic;
+	clk : in std_logic
 );
 end entity central_processing_unit;
 
@@ -96,8 +96,7 @@ architecture a0 of central_processing_unit is
 	
 	component finite_state_machine is port
 	(
-		assert_pc_addr : out std_logic;
-		en_cont_bus : out std_logic;
+		pass_to_ucode : out std_logic;
 		inc_pc : out std_logic;
 		load_ir : out std_logic;
 		exec_c : in std_logic;
@@ -115,43 +114,44 @@ architecture a0 of central_processing_unit is
 
 	---------------------------signal section---------------------------
 	-- busses:
-	signal data_bus std_logic_vector(7 downto 0);
-	signal addr_bus std_logic_vector(15 downto 0);
-	signal cont_bus std_logic_vector(41 downto 0);
+	signal data_bus : std_logic_vector(7 downto 0);
+	signal addr_bus : std_logic_vector(15 downto 0);
+	signal cont_bus : std_logic_vector(41 downto 0);
 	-- processing signals:
-	signal a_out std_logic_vector(7 downto 0);
-	signal g_out std_logic_vector(7 downto 0);
-	signal h_out std_logic_vector(7 downto 0);
-	signal x_out std_logic_vector(7 downto 0);
-	signal y_out std_logic_vector(7 downto 0);
-	signal m_out std_logic_vector(7 downto 0);
-	signal s_out std_logic_vector(7 downto 0);
-	signal sp_out std_logic_vector(7 downto 0);
-	signal alu_result std_logic_vector(7 downto 0);
-	signal alu_status std_logic_vector(3 downto 0);
+	signal a_out : std_logic_vector(7 downto 0);
+	signal g_out : std_logic_vector(7 downto 0);
+	signal h_out : std_logic_vector(7 downto 0);
+	signal x_out : std_logic_vector(7 downto 0);
+	signal y_out : std_logic_vector(7 downto 0);
+	signal m_out : std_logic_vector(7 downto 0);
+	signal s_out : std_logic_vector(7 downto 0);
+	signal sp_out : std_logic_vector(7 downto 0);
+	signal alu_result : std_logic_vector(7 downto 0);
+	signal alu_status : std_logic_vector(3 downto 0);
 	-- addressing signals:
-	signal pc_out std_logic_vector(15 downto 0);
-	signal addr_bus_out std_logic_vector(15 downto 0);
+	signal pc_out : std_logic_vector(15 downto 0);
+	signal addr_bus_i : std_logic_vector(15 downto 0);
 	-- control signals:
-	signal ir_out std_logic_vector(7 downto 0);
-	signal fsm_pass_to_ucode std_logic;
-	signal fsm_inc_pc std_logic;
-	signal fsm_load_ir std_logic;
-	signal inc_pc std_logic;
-	signal control_bus_out std_logic_vector(41 downto 0);
+	signal ir_out : std_logic_vector(7 downto 0);
+	signal fsm_pass_to_ucode : std_logic;
+	signal fsm_inc_pc : std_logic;
+	signal fsm_load_ir : std_logic;
+	signal inc_pc : std_logic;
+	signal cont_bus_i : std_logic_vector(41 downto 0);
+	signal incpc : std_logic;
 	
 begin
 
 	debug_out <= s_out & ir_out & pc_out;
 	data_bus_out <= data_bus;
 	addr_bus_out <= addr_bus;
-	data_bus_in <= m_out;
+	m_out <= data_bus_in;
 	memory_wren <= cont_bus(15);
 
 	-------------------------processing section-------------------------
 	A : component general_purpose_register port map
 	(
-		ai  => data_bus;
+		ai  => data_bus,
 		bi  => alu_result,
 		do	 => a_out,
 		la  => cont_bus(5),
@@ -162,8 +162,8 @@ begin
 	
 	G : component general_purpose_register port map
 	(
-		ai  => data_bus;
-		bi  => addr_bus(15 downto 8);
+		ai  => data_bus,
+		bi  => addr_bus(15 downto 8),
 		do	 => g_out,
 		la  => cont_bus(7),
 		lb	 => cont_bus(8),
@@ -173,8 +173,8 @@ begin
 	
 	H : component general_purpose_register port map
 	(
-		ai  => data_bus;
-		bi  => addr_bus(7 downto 0);
+		ai  => data_bus,
+		bi  => addr_bus(7 downto 0),
 		do	 => h_out,
 		la  => cont_bus(9),
 		lb	 => cont_bus(10),
@@ -184,7 +184,7 @@ begin
 	
 	X : component general_purpose_register port map
 	(
-		ai  => data_bus;
+		ai  => data_bus,
 		bi  => sp_out,
 		do	 => x_out,
 		la  => cont_bus(11),
@@ -195,7 +195,7 @@ begin
 	
 	Y : component general_purpose_register port map
 	(
-		ai  => data_bus;
+		ai  => data_bus,
 		bi  => s_out,
 		do	 => y_out,
 		la  => cont_bus(13),
@@ -254,16 +254,16 @@ begin
 		ld  => cont_bus(31),
 		inc => incpc,
 		rs  => rst,
-		clk => clk,
+		clk => clk
 	);
 	
 	with cont_bus(4 downto 3) select
-		addr_bus_out <= pc_out when "00",
+		addr_bus_i <= pc_out when "00",
 						g_out & h_out when "01",
 						"00000000" & sp_out when "10",
 						"0000000000000000" when others;
 	
-	addr_bus <= addr_bus_out when fsm_pass_to_ucode = '1' else pc_out;
+	addr_bus <= addr_bus_i when fsm_pass_to_ucode = '1' else pc_out;
 	
 	---------------------------control section--------------------------
 	IR : component instruction_register port map
@@ -289,18 +289,18 @@ begin
 	BD : component branch_decoder port map
 	(
 		status_in => s_out,
-		branch_in => cont_bus(40 downto 33);
-		ins_incpc => cont_bus(32);
-		fsm_incpc => fsm_inc_pc;
+		branch_in => cont_bus(40 downto 33),
+		ins_incpc => cont_bus(32),
+		fsm_incpc => fsm_inc_pc,
 		increment_pc => incpc
 	);
 	
-	cont_bus <= cont_bus_out when fsm_pass_to_ucode = '1' else (0 => '0', others => '0');
+	cont_bus <= cont_bus_i when fsm_pass_to_ucode = '1' else (0 => '0', others => '0');
 	
 	MCL : component microcode_LUT port map
 	(
 		address => ir_out,
-		microinstruction => cont_bus_out
+		microinstruction => cont_bus_i
 	);
 	
 end architecture a0;
