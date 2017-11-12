@@ -12,8 +12,8 @@ architecture a0 of microcode_LUT is
 begin
 
 	with address select
-		microcinstruction <= "" when "",
-									"" when "",
+		microcinstruction <= "00000000000000000000000000000000000000000" when "00000000",
+									"00000000000000000000000000000000000000000" when "00000001",
 									(0 => '0', others => '0') when others;
 
 end architecture a0;

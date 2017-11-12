@@ -295,7 +295,7 @@ begin
 		increment_pc => incpc
 	);
 	
-	cont_bus <= cont_bus_out when fsm_pass_to_ucode = '1' else (others => 0);
+	cont_bus <= cont_bus_out when fsm_pass_to_ucode = '1' else (0 => '0', others => '0');
 	
 	MCL : component microcode_LUT port map
 	(
