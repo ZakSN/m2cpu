@@ -6,21 +6,29 @@ using namespace std;
 void write_line(bool*, int, string);
 string hex_to_bin(string);
 void parse_file(char*);
+void interactive();
 
 static const int CONT_BUS_WIDTH = 42;
 
 int main(int argc, char** argv){
-	if (argc > 2)
-	{
+	if(argc > 2){
 		cout<<"usage:"<<endl;
 		cout<<"interactive: gen_ucode"<<endl;
 		cout<<"file parse: gen_ucode ${FILE}"<<endl;
 		return -1;
 	}
-	if (argc == 2){
+	if(argc == 2){
 		parse_file(argv[1]);
 		return 0;
 	}
+	if(argc == 1){
+		interactive();
+		return 0;
+	}
+	return 0;
+}
+
+void interactive(){
 	bool cont_bus[CONT_BUS_WIDTH] = {0};
 	string u_addr;
 	cout<<"Enter the microaddress:"<<endl;
@@ -34,7 +42,6 @@ int main(int argc, char** argv){
 		cont_bus[bit_to_flip] = !cont_bus[bit_to_flip];
 	}
 	write_line(cont_bus, CONT_BUS_WIDTH, u_addr);
-	return 0;
 }
 
 void parse_file(char* file_name){
@@ -49,12 +56,12 @@ void parse_file(char* file_name){
 		bool cont = true;
 		bool cont_bus[CONT_BUS_WIDTH] = {0};
 		u_addr = line.substr(0, line.find_first_of(" "));
-		while (cont) {
+		while (cont){
 			line = line.substr(line.find_first_of(" ")+1, line.length());
-			if (line.find_first_of(" ") != line.npos) {
+			if(line.find_first_of(" ") != line.npos){
 				bit_to_flip_s = line.substr(0, line.find_first_of(" "));
 			}
-			else {
+			else{
 				bit_to_flip_s = line.substr(0, line.find_first_of("\n"));
 				cont = false;
 			}
@@ -72,7 +79,7 @@ void write_line(bool* cont_bus, int len, string u_addr){
 	bin_u_addr = hex_to_bin(u_addr);
 	cout<<"\"";
 	for(int c = len-1; c >=0; c--){
-		if(cont_bus[c]==true)
+		if (cont_bus[c]==true)
 			cout<<"1";
 		else
 			cout<<"0";
