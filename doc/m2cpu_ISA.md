@@ -97,8 +97,8 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 ### Push General Purpose Register To Stack:
 - Mnemonics and Codes:
 	- `PHA` (0xB0)
-	- `PHH` (0xC0)
-	- `PHG` (0xD0)
+	- `PHG` (0xC0)
+	- `PHH` (0xD0)
 	- `PHX` (0xE0)
 	- `PHY` (0xF0)
 - Description: Push the contents of 'q' to the zero page stack, where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation INCREMENTS the stack pointer.
