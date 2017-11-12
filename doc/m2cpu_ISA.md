@@ -38,7 +38,7 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	- `LDX SP` (0x19)
 - Description: Load x with the stack pointer or load the stack pointer with x.
 - States: 
-	- state 1: assert `lb` on X for `LDX SP`, or assert `ld` on SP for `LDX SP`.
+	- state 1: assert `lb` on X for `LDX SP`, or assert `ld` on SP for `LDSP X`.
 - Number: 2
 
 ### Load Y with status register:
