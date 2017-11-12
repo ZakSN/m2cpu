@@ -16,5 +16,7 @@ incremental_db/
 simulation/
 gen_ucode
 
+*.ods#
+*.swp
 # => excludes *.sof from ignoring.
 #!*.sof
