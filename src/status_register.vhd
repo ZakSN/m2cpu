@@ -25,6 +25,7 @@ architecture a0 of status_register is
 	end component register_8bit;
 
 	signal flag_in : std_logic_vector(7 downto 0);
+	signal load : std_logic;
 	
 begin
 
@@ -40,11 +41,13 @@ begin
 					  si(7 downto 1) & '0' when "00000001", -- clear O
 					  si when others;
 					  
+	load <= '0' when ld & fsc = "000000000" else '1';
+
 	sr : component register_8bit port map
 	(
 		di => flag_in,
 		do => so,
-		ld => ld,
+		ld => load,
 		rs => rs,
 		clk => clk
 	);
