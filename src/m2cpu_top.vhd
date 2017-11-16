@@ -80,10 +80,10 @@ architecture a0 of m2cpu_top is
 
 ------------------signal section----------------------------
 	signal sys_clk : std_logic; -- system clock
-	signal EXEC_PROG : std_logic; -- execute/program mode switch
-	signal FULL_SLOW : std_logic; -- clock speed switch
+	signal MODE : std_logic_vector(1 downto 0); -- the mode that the computer is in: program, single step, low speed, full speed
 	signal nkey : std_logic_vector(1 downto 0); -- inverted key signals
 	signal ndkey : std_logic_vector(1 downto 0); -- inverted and debounced key signals
+	signal reset : std_logic;
 	
 	signal cpu_data_bus_out : std_logic_vector(7 downto 0);
 	signal cpu_addr_bus_out : std_logic_vector(15 downto 0);
@@ -99,13 +99,13 @@ architecture a0 of m2cpu_top is
 	signal mem_clk : std_logic;
 	
 	signal slow_clk : std_logic;
-	signal clk_sel : std_logic_vector(1 downto 0);
 	
 	signal disp_bus : std_logic_vector(31 downto 0);
 	
 begin
 
 	nkey <= NOT(KEY);
+	reset <= '1' when MODE = "00" else '0'; -- only reset when in program mode
 
 	debounce_0 : component debouncer port map
 	(
@@ -121,10 +121,9 @@ begin
 		clk => CLK50
 	);
 	
-	EXEC_PROG <= SW(9);
-	FULL_SLOW <= SW(8);
+	MODE <= SW(9 downto 8);
 	LED(8) <= sys_clk; -- shows clock speed
-	LED(9) <= EXEC_PROG; -- light on when executing
+	LED(9) <= '0' when MODE = "00" else '1'; -- light on when executing
 	
 	addr_shift : component address_shift_register port map
 	(
@@ -136,7 +135,7 @@ begin
 	clk_div : component clock_divider port map
 	(
 		clkin => CLK50,
-		rst => NOT(EXEC_PROG),
+		rst => reset,
 		clkout => slow_clk
 	);
 	
@@ -156,23 +155,23 @@ begin
 		addr_bus_out => cpu_addr_bus_out,
 		memory_wren  => cpu_mem_wren,
 		debug_out    => cpu_debug_out,
-		rst => NOT(EXEC_PROG),
+		rst => reset,
 		clk => sys_clk
 	);
 	
-	mem_addr_bus_in <= control_addr_bus_out when EXEC_PROG = '0' else cpu_addr_bus_out;
-	mem_data_bus_in <= SW(7 downto 0) when EXEC_PROG = '0' else cpu_data_bus_out;
-	mem_mem_wren <= ndkey(0) when EXEC_PROG = '0' else cpu_mem_wren;
+	mem_addr_bus_in <= control_addr_bus_out when MODE = "00" else cpu_addr_bus_out;
+	mem_data_bus_in <= SW(7 downto 0) when MODE = "00" else cpu_data_bus_out;
+	mem_mem_wren <= ndkey(0) when MODE = "00" else cpu_mem_wren;
 	
-	clk_sel <= EXEC_PROG & FULL_SLOW;
-	with  clk_sel select
-		sys_clk <= '0' when "00",
-					  slow_clk when "10",
-					  ndkey(1) when "11",
+	with  MODE select
+		sys_clk <= '0' when "00", -- program mode
+					  ndkey(1) when "01", -- single step mode
+					  slow_clk when "10", -- slow speed mode
+					  CLK50 when "11", -- full speed mode
 					  '0' when others;
-	mem_clk <= CLK50 when EXEC_PROG = '0' else sys_clk;
+	mem_clk <= CLK50 when MODE = "00" else sys_clk;
 	
-	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when EXEC_PROG = '0' else cpu_debug_out;
+	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else cpu_debug_out;
 	
 	LED(7 downto 0) <= disp_bus(31 downto 24);
 	
