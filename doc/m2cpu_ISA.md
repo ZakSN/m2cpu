@@ -103,10 +103,10 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	- `PHY` (0xF0)
 - Description: Push the contents of 'q' to the zero page stack, where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation INCREMENTS the stack pointer.
 - States:
-	- state 1: select SP on address bus mux. select 'q' on data bus mux. assert `ph` on SP.
-	- state 2: unassert `ph`. maintain mux selections (memory access)
-	- state 3: assert `wren`
-	- state 4: unassert `wren`
+	- state 1: select SP on address bus mux. select 'q' on data bus mux.
+	- state 2: assert `wren`, maintain mux selections (memory access 1)
+	- state 3: unassert `wren`, assert `ph`.
+	- state 4: unassert `ph`.
 - Number: 5
 
 ### Pop General Purpose Register From Stack:

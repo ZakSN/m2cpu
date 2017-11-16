@@ -142,7 +142,7 @@ architecture a0 of central_processing_unit is
 	
 begin
 
-	debug_out <= s_out & ir_out & pc_out;
+	debug_out <= sp_out & ir_out & pc_out;
 	data_bus_out <= data_bus;
 	addr_bus_out <= addr_bus;
 	m_out <= data_bus_in;
