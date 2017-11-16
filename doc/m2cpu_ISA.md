@@ -118,11 +118,12 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	- `PPY` (0xF5)
 - Description: Pop the top of the zero page stack into 'q', where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation DECREMENTS the stack pointer.
 - States: 
-	- state 1: select SP on address bus mux. select M on data bus mux. assert `pp` on SP.
-	- state 2: unassert `pop`. maintain mux selections (memory access 1)
-	- state 3: maintain mux selections (memory access 2)
+	- state 1: select SP on the address bus mux. select M on the data bus mux.
+	- state 2: maintain mux selection (memory access 1)
+	- state 3: maintain mux selection (memory access 2)
 	- state 4: assert `la` on 'q'
-	- state 5: unassert `la` 
+	- state 5: unassert `la` on 'q', assert `pp`
+	- state 6: unassert `pp`
 - Number: 5
 
 ### ALU Operations:
