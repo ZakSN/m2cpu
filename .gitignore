@@ -14,7 +14,10 @@
 db/
 incremental_db/
 simulation/
+
 gen_ucode
+assembler
+*.o
 
 *.ods#
 *.swp

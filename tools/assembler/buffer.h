@@ -7,6 +7,7 @@ class buffer {
 		buffer();
 		~buffer();
 		void add_line(std::string line);
+		//void insert_line(std::string, int n);
 		std::string* access_line(int n);
 		bool remove_line(int n);
 		int length() {return len;}

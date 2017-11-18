@@ -27,6 +27,12 @@ void buffer::add_line (std::string line) {
 	len++;
 }
 
+/*
+*not implemented yet:
+*void buffer::insert_line (std::string, int n) {
+*	
+*}
+*/
 std::string* buffer::access_line (int n) {
 	if ((n >= 0) || (n < len)) {
 		return buf + n;
