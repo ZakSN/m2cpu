@@ -20,7 +20,11 @@ string lookup(string);
 bool whitespace (char);
 void errors (int, string);
 
+
 int RESET_VECTOR = 256;
+bool verbose;
+bool ERROR = false;
+
 static const int INSTRUCTION_NUMBER = 75;
 
 cmd start_cmd;
@@ -31,7 +35,8 @@ int main (int argc, char** argv) {
 		errors(-1, "SOMETHING BAD HAPPENED");
 		return -1;
 	}
-
+	
+	verbose = start_cmd.verbose;
 	RESET_VECTOR = start_cmd.base_addr;
 	cout<<"OUTFILE: "<<start_cmd.outfile<<endl;
 
@@ -52,6 +57,10 @@ int main (int argc, char** argv) {
 	prog = address(prog, RESET_VECTOR);
 	prog = eval_tags(prog);
 	
+	if(ERROR) {
+		return -1;
+	}
+
 	cout<<"substituted file:"<<endl;
 	for (int c = 0; c < prog.length(); c++) {
 		cout<<prog.access_line(c)<<endl;
@@ -102,7 +111,9 @@ buffer eval_tags (buffer to_eval) {
 						string addr = to_eval.access_line(d).substr(0, 4);
 						addresses.push_back(addr);
 						cont = false;
-						//cout<<"found tag: '"<<ue_line<<"' for addr: '"<<addr<<"'"<<endl;
+						if(verbose) {
+							cout<<"found tag: '"<<ue_line<<"' for addr: '"<<addr<<"'"<<endl;
+						}
 					}
 				}
 				if (cont) {
@@ -153,7 +164,9 @@ buffer eval_const (buffer to_eval) {
 			if (code_index != string::npos) {
 				string symbol = ue_line.substr(0, code_index);
 				string code = ue_line.substr(code_index+2);
-				//cout<<"found symbol: '"<<symbol<<"' for code: '"<<code<<"'"<<<<endl;
+				if (verbose) {
+					cout<<"found symbol: '"<<symbol<<"' for code: '"<<code<<"'"<<endl;
+				}
 				if (code.length() != 2) {
 					errors(3, ue_line);
 				}
@@ -411,7 +424,7 @@ void errors (int e, string s) {
 			cerr<<"CRITICAL ERROR"<<endl;
 			break;
 		case 1:
-			cerr<<"ERROR: address beyond 65536. wrapping address space"<<endl;
+			cerr<<"ERROR: address beyond 65535"<<endl;
 			break;
 		case 2:
 			cerr<<"ERROR: UNRECOGNIZED INSTRUCTION: "<<s<<endl;
@@ -434,4 +447,5 @@ void errors (int e, string s) {
 			cerr<<"FATAL ERROR"<<endl;
 			break;
 	}
+	ERROR = true;
 }
