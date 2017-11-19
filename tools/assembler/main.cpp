@@ -12,6 +12,7 @@ buffer arrange (buffer);
 buffer load_file (fstream*);
 buffer substitute (buffer);
 buffer eval_const (buffer);
+buffer address (buffer, int);
 string int_to_hexstr (int);
 string lookup(string);
 bool whitespace (char);
@@ -36,6 +37,7 @@ int main (int argc, char** argv) {
 	prog = arrange(prog);
 	prog = substitute(prog);
 	prog = eval_const(prog);
+	prog = address(prog, RESET_VECTOR);
 	
 	cout<<"substituted file:"<<endl;
 	for (int c = 0; c < prog.length(); c++) {
@@ -43,6 +45,31 @@ int main (int argc, char** argv) {
 	}
 
 	return 0;
+}
+
+buffer address (buffer to_addr, int base_addr) {
+	buffer addressed;
+	string ua_line;
+	string a_line;
+	int line_number = 0;
+	for (int c = 0; c < to_addr.length(); c++) {
+		ua_line = to_addr.access_line(c);
+		a_line = "";
+		switch (ua_line[0]) {
+			case ':':
+			case '+':
+			case '-':
+				addressed.add_line(ua_line);
+				break;
+			default:
+				a_line += int_to_hexstr(line_number + base_addr);
+				a_line += ua_line;
+				addressed.add_line(a_line);
+				line_number++;
+				break;
+		}
+	}
+	return addressed;
 }
 
 buffer eval_const (buffer to_eval) {
@@ -90,7 +117,6 @@ buffer substitute (buffer to_sub) {
 	buffer subbed;
 	string us_line;
 	string s_line;
-	int line_number = 0;
 	for (int c = 0; c < to_sub.length(); c++) {
 		us_line = to_sub.access_line(c);
 		s_line = "";
@@ -218,7 +244,7 @@ string int_to_hexstr (int in) {
 		errors (1, "");
 	}
 	stringstream s;
-	s<<hex<<setfill('0')<<setw(4)<<in;
+	s<<hex<<uppercase<<setfill('0')<<setw(4)<<in;
 	return s.str();
 }
 
