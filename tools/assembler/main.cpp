@@ -13,6 +13,7 @@ buffer load_file (fstream*);
 buffer substitute (buffer);
 buffer eval_const (buffer);
 buffer address (buffer, int);
+buffer eval_tags (buffer);
 string int_to_hexstr (int);
 string lookup(string);
 bool whitespace (char);
@@ -38,6 +39,7 @@ int main (int argc, char** argv) {
 	prog = substitute(prog);
 	prog = eval_const(prog);
 	prog = address(prog, RESET_VECTOR);
+	prog = eval_tags(prog);
 	
 	cout<<"substituted file:"<<endl;
 	for (int c = 0; c < prog.length(); c++) {
@@ -57,8 +59,6 @@ buffer address (buffer to_addr, int base_addr) {
 		a_line = "";
 		switch (ua_line[0]) {
 			case ':':
-			case '+':
-			case '-':
 				addressed.add_line(ua_line);
 				break;
 			default:
@@ -70,6 +70,61 @@ buffer address (buffer to_addr, int base_addr) {
 		}
 	}
 	return addressed;
+}
+
+buffer eval_tags (buffer to_eval) {
+	buffer evaled;
+	string ue_line;
+	string e_line;
+	vector<string> tags;
+	vector<string> addresses;
+	for (int c = 0; c < to_eval.length(); c++) {
+		ue_line = to_eval.access_line(c);
+		e_line = "";
+		if (ue_line[0] == ':') {
+			tags.push_back(ue_line);
+			if (c == (to_eval.length() - 1)) {errors(6, ue_line);}
+			else {
+				bool cont = true;
+				for (int d = c+1; d < to_eval.length() && cont; d++) {
+					if (to_eval.access_line(d)[0] != ':') {
+						string addr = to_eval.access_line(d).substr(0, 4);
+						addresses.push_back(addr);
+						cont = false;
+						//cout<<"found tag: '"<<ue_line<<"' for addr: '"<<addr<<"'"<<endl;
+					}
+				}
+				if (cont) {
+					errors(6, ue_line);
+				}
+			}
+		}
+		else if ((ue_line.find("+:") != string::npos) || (ue_line.find("-:") != string::npos)) {
+			e_line += ue_line.substr(0, 4);
+			string tag = ue_line.substr(5);
+			bool cont = true;
+			for (int d = 0; d < tags.size() && cont; d++) {
+				if (tags[d] == tag) {
+					if (ue_line.find("+:") != string::npos) {
+						e_line += addresses[d].substr(0, 2);
+					}
+					else {
+						e_line += addresses[d].substr(2);
+					}
+					cont = false;
+					evaled.add_line(e_line);
+				}
+			}
+			if (cont) {
+				evaled.add_line(ue_line);
+				errors(5, ue_line);
+			}
+		}
+		else {
+			evaled.add_line(ue_line);
+		}
+	}
+	return evaled;
 }
 
 buffer eval_const (buffer to_eval) {
@@ -87,8 +142,7 @@ buffer eval_const (buffer to_eval) {
 			if (code_index != string::npos) {
 				string symbol = ue_line.substr(0, code_index);
 				string code = ue_line.substr(code_index+2);
-				//cout<<"symbol found: "<<symbol<<endl;
-				//cout<<"code for symbol: "<<code<<endl;
+				//cout<<"found symbol: '"<<symbol<<"' for code: '"<<code<<"'"<<<<endl;
 				if (code.length() != 2) {
 					errors(3, ue_line);
 				}
@@ -356,6 +410,12 @@ void errors (int e, string s) {
 			break;
 		case 4:
 			cerr<<"ERROR: UNRECOGNIZED SYMBOL: "<<s<<endl;
+			break;
+		case 5:
+			cerr<<"ERROR: UNRECOGNIZED ADDRESS TAG: "<<s<<endl;
+			break;
+		case 6:
+			cerr<<"ERROR: REDUNDANT TAG: "<<s<<endl;
 			break;
 		default:
 			cerr<<"UNDEFINED ERROR"<<endl;
