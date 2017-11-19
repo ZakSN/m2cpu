@@ -3,13 +3,15 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <vector>
 #include "buffer.h"
 using namespace std;
 
 buffer strip (buffer);
 buffer arrange (buffer);
 buffer load_file (fstream*);
-buffer substitute (buffer, int);
+buffer substitute (buffer);
+buffer eval_const (buffer);
 string int_to_hexstr (int);
 string lookup(string);
 bool whitespace (char);
@@ -32,9 +34,10 @@ int main (int argc, char** argv) {
 
 	prog = strip(prog);
 	prog = arrange(prog);
-	prog = substitute(prog, RESET_VECTOR);
+	prog = substitute(prog);
+	prog = eval_const(prog);
 	
-	cout<<"addressed and substituted file:"<<endl;
+	cout<<"substituted file:"<<endl;
 	for (int c = 0; c < prog.length(); c++) {
 		cout<<prog.access_line(c)<<endl;
 	}
@@ -42,7 +45,48 @@ int main (int argc, char** argv) {
 	return 0;
 }
 
-buffer substitute (buffer to_sub, int base_addr) {
+buffer eval_const (buffer to_eval) {
+	buffer evaled;
+	string ue_line;
+	vector<string> symbols;
+	vector<string> codes;
+	for (int c = 0; c < to_eval.length(); c++) {
+		ue_line = to_eval.access_line(c);
+		if (ue_line[0] != '$') {
+			evaled.add_line(ue_line);
+		}
+		else {
+			int code_index = ue_line.find("0x");
+			if (code_index != string::npos) {
+				string symbol = ue_line.substr(0, code_index);
+				string code = ue_line.substr(code_index+2);
+				//cout<<"symbol found: "<<symbol<<endl;
+				//cout<<"code for symbol: "<<code<<endl;
+				if (code.length() != 2) {
+					errors(3, ue_line);
+				}
+				symbols.push_back(symbol);
+				codes.push_back(code);
+			}
+			else {
+				bool cont = true;
+				for (int c = 0; c < symbols.size() && cont; c++) {
+					if (symbols[c] == ue_line) {
+						evaled.add_line(codes[c]);
+						cont = false;
+					}
+				}
+				if (cont) {
+					errors(4, ue_line);
+					evaled.add_line(ue_line);
+				}
+			}
+		}
+	}
+	return evaled;
+}
+
+buffer substitute (buffer to_sub) {
 	buffer subbed;
 	string us_line;
 	string s_line;
@@ -56,13 +100,15 @@ buffer substitute (buffer to_sub, int base_addr) {
 					if (us_line[1] != 'x') {
 						errors(3, us_line);
 					}
+					else if (us_line.length() != 4) {
+						errors(3, us_line);
+					}
 					else {
-						s_line += int_to_hexstr(line_number + base_addr);
 						s_line += us_line.substr(2);
 					}
 				}
 				else {
-					errors(2, us_line);
+					errors(3, us_line);
 				}
 				break;
 			case '$':
@@ -72,9 +118,7 @@ buffer substitute (buffer to_sub, int base_addr) {
 				s_line = us_line;
 				break;
 			default:
-				s_line += int_to_hexstr(line_number + base_addr);
 				s_line += lookup(us_line);
-				line_number++;
 				break;
 		}
 		subbed.add_line(s_line);
@@ -283,6 +327,9 @@ void errors (int e, string s) {
 			break;
 		case 3:
 			cerr<<"ERROR: BAD HEX: "<<s<<endl;
+			break;
+		case 4:
+			cerr<<"ERROR: UNRECOGNIZED SYMBOL: "<<s<<endl;
 			break;
 		default:
 			cerr<<"UNDEFINED ERROR"<<endl;
