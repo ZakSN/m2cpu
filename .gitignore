@@ -15,8 +15,8 @@ db/
 incremental_db/
 simulation/
 
-gen_ucode
-assembler
+/tools/microcode_generator/gen_ucode
+/tools/assembler/assembler
 *.o
 
 *.ods#
