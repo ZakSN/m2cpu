@@ -1,18 +1,15 @@
 #include <string>
+#include <vector>
 
 #ifndef _BUFFER_H_
 #define _BUFFER_H_
 class buffer {
 	public:
-		buffer();
-		~buffer();
 		void add_line(std::string line);
-		//void insert_line(std::string, int n);
-		std::string* access_line(int n);
+		std::string access_line(int n);
 		bool remove_line(int n);
-		int length() {return len;}
+		int length() {return buf.size();}
 	private:
-		int len;
-		std::string* buf;
+		std::vector<std::string> buf;
 };
 #endif
