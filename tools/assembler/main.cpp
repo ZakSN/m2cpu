@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include "buffer.h"
+#include "cmd_line.h"
 using namespace std;
 
 buffer strip (buffer);
@@ -19,17 +20,27 @@ string lookup(string);
 bool whitespace (char);
 void errors (int, string);
 
-static const int RESET_VECTOR = 256;
+int RESET_VECTOR = 256;
 static const int INSTRUCTION_NUMBER = 75;
 
+cmd start_cmd;
+
 int main (int argc, char** argv) {
-	if (argc != 2) {
-		cout<<"Usage: assembler ${ASSEMBLY_FILE}"<<endl;
+	start_cmd = parse_cmd(argc, argv);
+	if (start_cmd.give_up) {
+		errors(-1, "SOMETHING BAD HAPPENED");
 		return -1;
 	}
 
+	RESET_VECTOR = start_cmd.base_addr;
+	cout<<"OUTFILE: "<<start_cmd.outfile<<endl;
+
 	fstream asm_file;
-	asm_file.open(argv[1]);
+	asm_file.open(start_cmd.infile);
+	if (asm_file.fail()) {
+		errors(7, start_cmd.infile);
+		return -1;
+	}
 	buffer prog;
 	prog = load_file(&asm_file);
 	asm_file.close();
@@ -417,8 +428,10 @@ void errors (int e, string s) {
 		case 6:
 			cerr<<"ERROR: REDUNDANT TAG: "<<s<<endl;
 			break;
+		case 7:
+			cerr<<"NO SUCH FILE: "<<s<<endl;
 		default:
-			cerr<<"UNDEFINED ERROR"<<endl;
+			cerr<<"FATAL ERROR"<<endl;
 			break;
 	}
 }

@@ -1,6 +1,6 @@
 CXX=g++
 CXXFLAGS=-Wall
-OBJECTS=buffer.o main.o
+OBJECTS=buffer.o main.o cmd_line.o
 
 .PHONY: clean all
 
@@ -12,6 +12,9 @@ buffer.o: buffer.cpp buffer.h
 
 main.o: main.cpp buffer.h
 	$(CXX) $(CXXFLAGS) -c main.cpp
+
+cmd_line.o: cmd_line.cpp cmd_line.h
+	$(CXX) $(CXXFLAGS) -c cmd_line.cpp
 
 clean:
 	rm $(OBJECTS)
