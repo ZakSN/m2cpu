@@ -1,6 +1,6 @@
 CXX=g++
-CXXFLAGS=-Wall
-OBJECTS=buffer.o main.o cmd_line.o
+CXXFLAGS=-Wall -Wno-sign-compare
+OBJECTS=buffer.o main.o cmd_line.o parser.o
 
 .PHONY: clean all
 
@@ -15,6 +15,9 @@ main.o: main.cpp buffer.h
 
 cmd_line.o: cmd_line.cpp cmd_line.h
 	$(CXX) $(CXXFLAGS) -c cmd_line.cpp
+
+parser.o: parser.cpp parser.h
+	$(CXX) $(CXXFLAGS) -c parser.cpp
 
 clean:
 	rm $(OBJECTS)

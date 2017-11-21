@@ -12,7 +12,7 @@ $constant 0xFF
 
 
 		
-
+THISISNOTACOMMAND
 	   LDM	A
 	LDG +:address #high byte of address
 	LDH -:second_address #low byte of address
