@@ -38,11 +38,11 @@ int main (int argc, char** argv) {
 	prog = eval_const(prog, &verbose, &ERROR);
 	prog = address(prog, RESET_VECTOR, &ERROR);
 	prog = eval_tags(prog, &verbose, &ERROR);
-	
+
 	if(ERROR) {
 		return -1;
 	}
-	
+
 	prog = format_buffer(prog);
 	
 	ofstream of;

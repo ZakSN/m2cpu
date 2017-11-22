@@ -19,6 +19,8 @@ simulation/
 /tools/assembler/assembler
 *.o
 
+*.hex
+
 *.ods#
 *.swp
 # => excludes *.sof from ignoring.
