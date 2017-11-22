@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <vector>
 #include "parser.h"
+#include "buffer.h"
 
 /*
 * The (embarrassingly ugly) guts of the assembler. most of these function take 
@@ -295,6 +296,10 @@ std::string int_to_hexstr (int in, bool* e) {
 	if (in >= 65536) {
 		parser_errors (1, "BAD ADDR", e);
 	}
+	return int_to_hexstr(in);
+}
+
+std::string int_to_hexstr (int in) {
 	std::stringstream s;
 	s<<std::hex<<std::uppercase<<std::setfill('0')<<std::setw(4)<<in;
 	return s.str();

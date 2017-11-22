@@ -4,6 +4,7 @@
 #include "buffer.h"
 #include "cmd_line.h"
 #include "parser.h"
+#include "hex_formatter.h"
 using namespace std;
 
 int main (int argc, char** argv) {
@@ -16,10 +17,10 @@ int main (int argc, char** argv) {
 		parser_errors(-1, "SOMETHING BAD HAPPENED", &ERROR);
 		return -1;
 	}
-	
+
 	verbose = start_cmd.verbose;
 	RESET_VECTOR = start_cmd.base_addr;
-	cout<<"OUTFILE: "<<start_cmd.outfile<<endl;
+	string outfile_name = start_cmd.outfile;
 
 	fstream asm_file;
 	asm_file.open(start_cmd.infile);
@@ -41,11 +42,19 @@ int main (int argc, char** argv) {
 	if(ERROR) {
 		return -1;
 	}
-
-	cout<<"substituted file:"<<endl;
-	for (int c = 0; c < prog.length(); c++) {
-		cout<<prog.access_line(c)<<endl;
+	
+	prog = format_buffer(prog);
+	
+	ofstream of;
+	of.open(outfile_name.c_str());
+	if (of.fail()){
+		cerr<<"FATAL ERROR: COULD NOT CREATE OUTFILE: '"<<start_cmd.outfile<<"'"<<endl;
+		return -1;
 	}
+	for (int c = 0; c < prog.length(); c++) {
+		of<<prog.access_line(c)<<endl;
+	}
+	of.close();
 
 	return 0;
 }

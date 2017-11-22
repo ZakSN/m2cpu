@@ -15,6 +15,7 @@ buffer eval_const (buffer, bool*, bool*);
 buffer address (buffer, int, bool*);
 buffer eval_tags (buffer, bool*, bool*);
 std::string int_to_hexstr (int, bool*);
+std::string int_to_hexstr (int);
 std::string lookup(std::string, bool*);
 bool whitespace (char);
 void parser_errors (int, std::string, bool*);
