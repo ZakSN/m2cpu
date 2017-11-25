@@ -12,7 +12,7 @@ end entity clock_divider;
 
 architecture a0 of clock_divider is
 
-	constant q_sec : integer := 25000000; -- quarter of a second
+	constant q_sec : integer := 5000000;
 	signal clk_count : unsigned(31 downto 0);
 	signal q_sec_pulse : std_logic;
 	

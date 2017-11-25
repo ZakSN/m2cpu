@@ -44,7 +44,7 @@ buffer format_buffer(buffer to_fmt) {
 }
 
 std::string checksum (std::string u_chk) {
-	unsigned int line_sum;
+	unsigned int line_sum = 0;
 	u_chk = u_chk.substr(1);
 	for (int c = 0; c < u_chk.length(); c+=2){
 		line_sum += hexstr_to_int(u_chk.substr(c, 2));

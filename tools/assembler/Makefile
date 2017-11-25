@@ -24,4 +24,6 @@ hex_formatter.o: hex_formatter.cpp hex_formatter.h
 
 clean:
 	rm $(OBJECTS)
+	rm *.hex
+	rm a.out
 	rm assembler

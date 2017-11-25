@@ -1,9 +1,11 @@
+#include <string>
+
 #ifndef _CMD_LINE_H
 #define _CMD_LINE_H
 struct cmd{
 	bool verbose;
-	const char* infile;
-	const char* outfile;
+	std::string infile;
+	std::string outfile;
 	int base_addr;
 	bool give_up;
 };

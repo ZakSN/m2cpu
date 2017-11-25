@@ -8,7 +8,7 @@
 cmd parse_cmd (int argc, char** argv) {
 	cmd start_cmd  = {
 		false,
-		NULL,
+		"",
 		"a.out",
 		256,
 		false
@@ -47,11 +47,11 @@ cmd parse_cmd (int argc, char** argv) {
 				start_cmd.give_up=true;
 				return start_cmd;
 			}
-			start_cmd.outfile = args[c+1].c_str();
+			start_cmd.outfile = args[c+1];
 			c++;
 		}
 		else {
-			start_cmd.infile = args[c].c_str();
+			start_cmd.infile = args[c];
 		}
 	}
 	return start_cmd;

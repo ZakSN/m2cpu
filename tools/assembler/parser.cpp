@@ -45,7 +45,9 @@ buffer address (buffer to_addr, int base_addr, bool* e) {
 
 /*
 * evaluates address tags. similar to constants, except that tags are two bytes, and
-* must be refered to by either the hi/lo byte.
+* must be refered to by either the hi/lo byte. Tags can be anywhere in code so we need
+* two loops, the first builds a table of tags and addresses, the second associates
+* tag refrences with the appropriate address
 */
 buffer eval_tags (buffer to_eval, bool* v, bool* e) {
 	buffer evaled;
@@ -55,7 +57,6 @@ buffer eval_tags (buffer to_eval, bool* v, bool* e) {
 	std::vector<std::string> addresses;
 	for (int c = 0; c < to_eval.length(); c++) {
 		ue_line = to_eval.access_line(c);
-		e_line = "";
 		if (ue_line[0] == ':') {
 			tags.push_back(ue_line);
 			if (c == (to_eval.length() - 1)) {parser_errors(6, ue_line, e);}
@@ -76,7 +77,11 @@ buffer eval_tags (buffer to_eval, bool* v, bool* e) {
 				}
 			}
 		}
-		else if ((ue_line.find("+:") != std::string::npos) || (ue_line.find("-:") != std::string::npos)) {
+	}
+	for (int c = 0; c < to_eval.length(); c++) {
+		ue_line = to_eval.access_line(c);
+		e_line = "";
+		if ((ue_line.find("+:") != std::string::npos) || (ue_line.find("-:") != std::string::npos)) {
 			e_line += ue_line.substr(0, 4);
 			std::string tag = ue_line.substr(5);
 			bool cont = true;
@@ -97,7 +102,7 @@ buffer eval_tags (buffer to_eval, bool* v, bool* e) {
 				parser_errors(5, ue_line, e);
 			}
 		}
-		else {
+		else if (ue_line[0] != ':'){
 			evaled.add_line(ue_line);
 		}
 	}
