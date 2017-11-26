@@ -16,6 +16,6 @@ $value 0xAA
 # loop when operation is done
 	LDG +:halt_loop
 	LDH -:halt_loop
-	LDPC GH
+	JMP
 :forward_tag
 	NOP #need to jump to an address

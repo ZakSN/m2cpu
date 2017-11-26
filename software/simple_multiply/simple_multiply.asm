@@ -32,7 +32,7 @@ $operand2 0x10
 	LDH -:halt
 	ADD
 	BZC #if Z was clear $multiplier + 0 != 0
-	LDPC GH
+	JMP
 
 	#add multiplicand to product
 	LDG $base_addr
@@ -52,10 +52,10 @@ $operand2 0x10
 	#repeat
 	LDG +:loop
 	LDH -:loop
-	LDPC GH
+	JMP
 
 	#halt loop
 	LDG +:halt
 	LDH -:halt
 :halt
-	LDPC GH
+	JMP

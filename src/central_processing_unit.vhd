@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity central_processing_unit is port
 (
@@ -261,6 +262,7 @@ begin
 		addr_bus_i <= pc_out when "00",
 						g_out & h_out when "01",
 						"00000000" & sp_out when "10",
+						std_logic_vector(unsigned(g_out & h_out) - 1) when "11",
 						"0000000000000000" when others;
 	
 	addr_bus <= addr_bus_i when fsm_pass_to_ucode = '1' else pc_out;

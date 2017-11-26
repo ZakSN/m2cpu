@@ -34,11 +34,10 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 ### JMP
 - Mnemonic and Code:
 	- `JMP` (0x49)
-- Description: sets the PC so that the next instruction executed is the one stored at the address represented by GH. Note that since a machine cycle ends with the PC incrementing it is necessary to decrement the PC after loading it with GH so that the next instruction executed is at address GH.
+- Description: sets the PC so that the next instruction executed is the one stored at the address represented by GH ((J)u(MP) to GH). Note that since a machine cycle ends with the PC incrementing it is necessary to decrement the PC after loading it with GH so that the next instruction executed is at address GH.
 - States:
-	- state 1: select GH on the address bus mux. assert `ld` on the PC.
+	- state 1: select 'GH - 1' on the address bus mux. assert `ld` on the PC.
 	- state 2: unassert `ld` on the PC
-	- state 3: assert `decpc` on the PC
 - Number: 1
 
 ### X Register Stack Pointer Load:
@@ -198,7 +197,7 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	 	LDH <from somewhere> #load the lo byte
 	  	.
 		BZS #branch
-		LDPC GH #load the PC with the escape address (jump)
+		JMP #load the PC with the escape address
 		<continue on>
 		.
 - States:

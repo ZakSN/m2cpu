@@ -240,7 +240,7 @@ std::string lookup(std::string mnemonic, bool* e) {
 		"LDYG", "43",
 		"LDYH", "45",
 		"LDYX", "47",
-		"LDPCGH", "49",
+		"JMP", "49",
 		"ORR", "4C",
 		"BCS", "4E",
 		"XOR", "5C",
