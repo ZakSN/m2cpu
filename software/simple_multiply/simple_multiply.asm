@@ -54,8 +54,6 @@ $operand2 0x10
 	LDH -:loop
 	JMP
 
-	#halt loop
-	LDG +:halt
-	LDH -:halt
+#halt loop
 :halt
 	JMP
