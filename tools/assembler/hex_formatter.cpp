@@ -10,12 +10,14 @@ buffer format_buffer(buffer to_fmt) {
 	std::string uf_line;
 	std::string f_line;
 	std::string addr;
-	std::string prog_base = to_fmt.access_line(0).substr(0, 4);
-	bool prog_addr = false;
-	int d =0;
+	std::string prog_addr;
+	int d = 0;
 	for (int c = 0; c < 65536; c++) {
 		addr = int_to_hexstr(c);
-		if (addr == prog_base || prog_addr) {
+		if (d < to_fmt.length()) {
+			prog_addr = to_fmt.access_line(d).substr(0, 4);
+		}
+		if (addr == prog_addr) {
 			uf_line = to_fmt.access_line(d);
 			f_line = ":01";
 			f_line += uf_line.substr(0, 4);
@@ -24,12 +26,6 @@ buffer format_buffer(buffer to_fmt) {
 			f_line += checksum (f_line);
 			fmtd.add_line(f_line);
 			d++;
-			if (d < to_fmt.length()) {
-				prog_addr = true;
-			}
-			else {
-				prog_addr = false;
-			}
 		}
 		else {
 			f_line = ":01";

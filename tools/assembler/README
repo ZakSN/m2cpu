@@ -1,5 +1,5 @@
 This is a simple assembler for the m2cpu. It takes *.asm (ascii text) files as
-input and generate intel format *.hex files as output. The *.hex can be used to
+input and generates intel format *.hex files as output. The *.hex can be used to
 initialize block ram. example *.asm files are included for testing purposes.
 command line opions:
 -v 'verbose' spits out some debug info about symbols/tags
