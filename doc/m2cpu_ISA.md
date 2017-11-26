@@ -23,14 +23,23 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 - Number: 20
 
 ### 16 Bit Load:
-- Mnemonics and Codes:
+- Mnemonic and Code:
 	- `LDGH PC` (0x39)
-	- `LDPC GH` (0x49)
 - Description: Loads 'q' with the value of 'r', where 'q' and 'r' are 16 bit registers. Mnemonic schema: `LDq r`.
 - States:
-	- state 1: select 'r' on the address bus mux. assert load lines on 'q'.
+	- state 1: select 'r' on the address bus mux. assert load lines (`lb` on G and H) on 'q'.
 	- state 2: unassert load lines on 'q'
-- Number: 2
+- Number: 1
+
+### JMP
+- Mnemonic and Code:
+	- `JMP` (0x49)
+- Description: sets the PC so that the next instruction executed is the one stored at the address represented by GH. Note that since a machine cycle ends with the PC incrementing it is necessary to decrement the PC after loading it with GH so that the next instruction executed is at address GH.
+- States:
+	- state 1: select GH on the address bus mux. assert `ld` on the PC.
+	- state 2: unassert `ld` on the PC
+	- state 3: assert `decpc` on the PC
+- Number: 1
 
 ### X Register Stack Pointer Load:
 - Mnemonics and Codes:
