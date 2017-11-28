@@ -53,22 +53,24 @@ void parse_file(char* file_name){
 	int bit_to_flip_i;
 	getline(file, line);
 	while (!file.eof()){
-		bool cont = true;
-		bool cont_bus[CONT_BUS_WIDTH] = {0};
-		u_addr = line.substr(0, line.find_first_of(" "));
-		while (cont){
-			line = line.substr(line.find_first_of(" ")+1, line.length());
-			if(line.find_first_of(" ") != line.npos){
-				bit_to_flip_s = line.substr(0, line.find_first_of(" "));
+		if (line[0] != '#') {
+			bool cont = true;
+			bool cont_bus[CONT_BUS_WIDTH] = {0};
+			u_addr = line.substr(0, line.find_first_of(" "));
+			while (cont){
+				line = line.substr(line.find_first_of(" ")+1, line.length());
+				if(line.find_first_of(" ") != line.npos){
+					bit_to_flip_s = line.substr(0, line.find_first_of(" "));
+				}
+				else{
+					bit_to_flip_s = line.substr(0, line.find_first_of("\n"));
+					cont = false;
+				}
+				bit_to_flip_i = stoi(bit_to_flip_s, NULL, 10);
+				cont_bus[bit_to_flip_i] = !cont_bus[bit_to_flip_i];
 			}
-			else{
-				bit_to_flip_s = line.substr(0, line.find_first_of("\n"));
-				cont = false;
-			}
-			bit_to_flip_i = stoi(bit_to_flip_s, NULL, 10);
-			cont_bus[bit_to_flip_i] = !cont_bus[bit_to_flip_i];
+			write_line(cont_bus, CONT_BUS_WIDTH, u_addr);
 		}
-		write_line(cont_bus, CONT_BUS_WIDTH, u_addr);
 		getline(file, line);
 	}
 	file.close();

@@ -16,6 +16,7 @@ incremental_db/
 simulation/
 
 /tools/microcode_generator/gen_ucode
+/tools/microcode_generator/ucode_gen.vhd
 /tools/assembler/assembler
 *.o
 
