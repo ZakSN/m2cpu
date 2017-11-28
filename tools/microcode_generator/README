@@ -1,4 +1,4 @@
-Simple tool to generator VHDL for the Microcode LUT.
+Simple tool to generate VHDL for the Microcode LUT.
 probably not a great way to do this, but it wokrs.
 
 to compile:

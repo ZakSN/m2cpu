@@ -36,6 +36,6 @@ the the data in the multiplexer in `src/microcode_LUT.vhd` was generated with:
 ./gen_ucode microcode_states > ucode_gen.vhd
 ```
 
-the microcode state source files are: `tools/microcode_generator/microcode_states` and `tools/microcode_generator/microcode_states_commented`. the two files contain the same data, however `gen_ucode` doesn't parse comments so the commented file is for convenience only. (If I was smarter I'd use the c preprocessor to strip it).
+the microcode state source file is: `tools/microcode_generator/microcode_states`. lines that begin with a `#` are ignored during VHDL generation.
 
 the source for `gen_ucode` is `gen_ucode.cpp`
