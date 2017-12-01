@@ -3,17 +3,23 @@ use ieee.std_logic_1164.all;
 
 entity m2cpu_top is port
 (
-	--this I/O reflects what is available on the DE10-lite dev-board
+	-- this I/O reflects what is available on the DE10-lite dev-board
    LED      : out std_logic_vector (9 downto 0); --leds
    SW       : in std_logic_vector (9 downto 0); --toggle switches
    KEY      : in std_logic_vector (1 downto 0); --momentary push buttons
-	--7 segment (+ dp) displays
+	-- 7 segment (+ dp) displays
 	HEX0		: out std_logic_vector (7 downto 0); 
 	HEX1		: out std_logic_vector (7 downto 0);
 	HEX2		: out std_logic_vector (7 downto 0);
 	HEX3		: out std_logic_vector (7 downto 0);
 	HEX4		: out std_logic_vector (7 downto 0);
 	HEX5		: out std_logic_vector (7 downto 0);
+	-- VGA video signals
+	R			: out std_logic_vector (3 downto 0);
+	G			: out std_logic_vector (3 downto 0);
+	B			: out std_logic_vector (3 downto 0);
+	HSYNC		: out std_logic;
+	VSYNC		: out std_logic;
    CLK50    : in std_logic --system clock
 );
 end entity m2cpu_top;
@@ -41,7 +47,12 @@ architecture a0 of m2cpu_top is
 	);
 	end component;
 	
-	component clock_divider is port
+	component clock_divider is 
+	generic
+	(
+		half_period : integer
+	);
+	port
 	(
 		clkin : in std_logic; --50MHz clock from the board
 		rst : in std_logic; --async reset
@@ -77,6 +88,19 @@ architecture a0 of m2cpu_top is
 		clk : in std_logic
 	);
 	end component central_processing_unit;
+	
+	component video_generator is port
+	(
+		signal r : out std_logic_vector(3 downto 0);
+		signal g : out std_logic_vector(3 downto 0);
+		signal b : out std_logic_vector(3 downto 0);
+		signal hsync : out std_logic;
+		signal vsync : out std_logic;
+		signal pc : out std_logic;
+		signal rs : in std_logic;
+		signal clk : in std_logic
+	);
+	end component video_generator;
 
 ------------------signal section----------------------------
 	signal sys_clk : std_logic; -- system clock
@@ -102,6 +126,8 @@ architecture a0 of m2cpu_top is
 	
 	signal disp_bus : std_logic_vector(31 downto 0);
 	
+	signal hy : std_logic;
+	
 begin
 
 	nkey <= NOT(KEY);
@@ -122,7 +148,7 @@ begin
 	);
 	
 	MODE <= SW(9 downto 8);
-	LED(8) <= sys_clk; -- shows clock speed
+	LED(8) <= hy; --sys_clk; -- shows clock speed
 	LED(9) <= '0' when MODE = "00" else '1'; -- light on when executing
 	
 	addr_shift : component address_shift_register port map
@@ -132,7 +158,12 @@ begin
 		shift => ndkey(1)
 	);
 	
-	clk_div : component clock_divider port map
+	clk_div : component clock_divider 
+	generic map
+	(
+		half_period => 5000000
+	)
+	port map
 	(
 		clkin => CLK50,
 		rst => reset,
@@ -198,5 +229,21 @@ begin
 		hex_out_hi => HEX1,
 		hex_out_lo => HEX0
 	);
+	
+	
+	----------------------------video experimentation-----------------------------
+	vid_gen : component video_generator port map
+	(
+		r => R,
+		g => G,
+		b => B,
+		hsync => HSYNC,
+		vsync => hy, --VSYNC,
+		pc => open,
+		rs => '0',
+		clk => CLK50
+	);
+	
+	VSYNC <= hy;
 	
 end architecture a0;

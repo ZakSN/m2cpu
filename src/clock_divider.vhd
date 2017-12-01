@@ -2,48 +2,53 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity clock_divider is port
+entity clock_divider is 
+generic
+(
+	half_period : integer
+);
+port
 (
 	clkin : in std_logic; --50MHz clock from the board
 	rst : in std_logic; --async reset
-	clkout : out std_logic --slow clock (human visible)
+	clkout : out std_logic --slower clock
 );
 end entity clock_divider;
 
 architecture a0 of clock_divider is
 
-	constant q_sec : integer := 5000000;
+	constant HT : integer := half_period;
 	signal clk_count : unsigned(31 downto 0);
-	signal q_sec_pulse : std_logic;
+	signal HT_pulse : std_logic;
 	
 	signal tq : std_logic;
 
 begin
 
-	quarter_second_counter : process (clkin, rst)
+	half_period_counter : process (clkin, rst)
 	begin
 		if (rst = '1') then
 			clk_count <= to_unsigned(0, 32);
-			q_sec_pulse <= '0';
+			HT_pulse <= '0';
 		elsif (rising_edge(clkin)) then
-			if (clk_count = to_unsigned(q_sec, 31)) then
+			if (clk_count = to_unsigned(HT, 31)) then
 				clk_count <= to_unsigned(0, 32);
-				q_sec_pulse <= '1';
+				HT_pulse <= '1';
 			else
 				clk_count <= clk_count + 1;
-				q_sec_pulse <= '0';
+				HT_pulse <= '0';
 			end if;
 		else
 			clk_count <= clk_count;
-			q_sec_pulse <= q_sec_pulse;
+			HT_pulse <= HT_pulse;
 		end if;
-	end process quarter_second_counter;
+	end process half_period_counter;
 	
-	tff : process (q_sec_pulse, rst)
+	tff : process (HT_pulse, rst)
 	begin
 		if (rst = '1') then
 			tq <= '0';
-		elsif (rising_edge(q_sec_pulse)) then
+		elsif (rising_edge(HT_pulse)) then
 			if (tq = '0') then
 				tq <= '1';
 			else
