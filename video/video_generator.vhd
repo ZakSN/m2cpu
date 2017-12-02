@@ -3,57 +3,57 @@ use ieee.std_logic_1164.all;
 
 entity video_generator is port
 (
-	signal r : out std_logic_vector(3 downto 0);
-	signal g : out std_logic_vector(3 downto 0);
-	signal b : out std_logic_vector(3 downto 0);
-	signal hsync : out std_logic;
-	signal vsync : out std_logic;
-	signal pc : out std_logic;
-	signal rs : in std_logic;
-	signal clk : in std_logic
+	r : out std_logic_vector(3 downto 0);
+	g : out std_logic_vector(3 downto 0);
+	b : out std_logic_vector(3 downto 0);
+	hsync : out std_logic;
+	vsync : out std_logic;
+	rs : in std_logic;
+	clk : in std_logic
 );
 end entity video_generator;
 
 architecture a0 of video_generator is
 
-	component clock_divider is 
+	component horizontal_signal is
 	generic
 	(
-		half_period : integer
+		-- length of time in line_clk lengths
+		front_porch : integer;
+		sync_pulse : integer;
+		back_porch : integer;
+		active_video : integer
 	);
 	port
 	(
-		clkin : in std_logic; --50MHz clock from the board
-		rst : in std_logic; --async reset
-		clkout : out std_logic --slower clock
-	);
-	end component clock_divider;
-	
-	component horizontal_signal is port
-	(
-		signal hsync_out : out std_logic; -- horizontal sync
-		signal r_out : out std_logic_vector(3 downto 0); -- colour channels
-		signal g_out : out std_logic_vector(3 downto 0);
-		signal b_out : out std_logic_vector(3 downto 0);
-		signal cen_out : out std_logic; -- colour eneable
-		signal line_clk_out : out std_logic;
-		signal clk : in std_logic; -- pixel clock in
-		signal rs : in std_logic -- async reset
+		hsync_out : out std_logic; -- horizontal sync
+		cen_out : out std_logic; -- colour eneable
+		line_clk_out : out std_logic;
+		clk : in std_logic; -- pixel clock in
+		rs : in std_logic -- async reset
 	);
 	end component horizontal_signal;
 	
-	component vertical_signal is port
+	component vertical_signal is
+	generic
 	(
-		signal vsync_out : out std_logic; -- vertical sync
-		signal len_out : out std_logic; -- line enable
-		signal clk : in std_logic; -- line clock in
-		signal rs : in std_logic -- async reset
+		-- length of time in pixel_clk cycle lengths
+		front_porch : integer;
+		sync_pulse : integer;
+		back_porch : integer;
+		active_video : integer
+	); 
+	port
+	(
+		vsync_out : out std_logic; -- vertical sync
+		len_out : out std_logic; -- line enable
+		clk : in std_logic; -- line clock in
+		rs : in std_logic -- async reset
 	);
 	end component vertical_signal;
 
 	signal pixel_clk : std_logic;
 	signal line_clk : std_logic;
-	signal h_colour_bus : std_logic_vector(11 downto 0);
 	signal v_colour_bus : std_logic_vector(11 downto 0);
 	signal colour_bus : std_logic_vector(11 downto 0);
 	signal h_enable : std_logic;
@@ -61,18 +61,7 @@ architecture a0 of video_generator is
 	
 begin
 
---	pixel_clock_generator : component clock_divider
---	generic map
---	(
---		half_period => 1
---	)
---	port map
---	(
---		clkin => clk,
---		rst => rs,
---		clkout => pixel_clk
---	);
-
+	-- TFF to get 25MHz
 	tff : process (clk, rs)
 	begin
 		if (rs = '1') then
@@ -84,21 +73,39 @@ begin
 		end if;
 	end process tff;
 	
-	pc <= line_clk;
-	
-	h_sig : component horizontal_signal port map
+	-- Generate the actual 'video' should just be a solid fill
+	v_colour_bus <= "111111111111" when h_enable = '1' else "000000000000";
+	colour_bus <= v_colour_bus when v_enable = '1' else "000000000000";
+	r <= colour_bus(11 downto 8);
+	g <= colour_bus(7 downto 4);
+	b <= colour_bus(3 downto 0);
+
+	h_sig : component horizontal_signal
+	generic map
+	(
+		front_porch => 15,
+		sync_pulse => 95,
+		back_porch => 47,
+		active_video => 637
+	)
+	port map
 	(
 		hsync_out => hsync,
-		r_out => h_colour_bus(11 downto 8),
-		g_out => h_colour_bus(7 downto 4),
-		b_out => h_colour_bus(3 downto 0),
 		cen_out => h_enable,
 		line_clk_out => line_clk,
 		clk => pixel_clk,
 		rs => rs
 	);
 	
-	v_sig : component vertical_signal port map
+	v_sig : component vertical_signal
+	generic map
+	(
+		front_porch => 10,
+		sync_pulse => 2,
+		back_porch => 33,
+		active_video => 480
+	)
+	port map
 	(
 		vsync_out => vsync,
 		len_out => v_enable,
@@ -106,11 +113,4 @@ begin
 		rs => rs
 	);
 	
-	--v_colour_bus <= h_colour_bus when h_enable = '1' else "000000000000";
-	v_colour_bus <= "000011110000" when h_enable = '1' else "000000000000";
-	colour_bus <= v_colour_bus when v_enable = '1' else "000000000000";
-	r <= colour_bus(11 downto 8);
-	g <= colour_bus(7 downto 4);
-	b <= colour_bus(3 downto 0);
-
 end architecture a0;

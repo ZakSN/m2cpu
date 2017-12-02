@@ -96,7 +96,6 @@ architecture a0 of m2cpu_top is
 		signal b : out std_logic_vector(3 downto 0);
 		signal hsync : out std_logic;
 		signal vsync : out std_logic;
-		signal pc : out std_logic;
 		signal rs : in std_logic;
 		signal clk : in std_logic
 	);
@@ -126,8 +125,6 @@ architecture a0 of m2cpu_top is
 	
 	signal disp_bus : std_logic_vector(31 downto 0);
 	
-	signal hy : std_logic;
-	
 begin
 
 	nkey <= NOT(KEY);
@@ -148,7 +145,7 @@ begin
 	);
 	
 	MODE <= SW(9 downto 8);
-	LED(8) <= hy; --sys_clk; -- shows clock speed
+	LED(8) <= sys_clk; -- shows clock speed
 	LED(9) <= '0' when MODE = "00" else '1'; -- light on when executing
 	
 	addr_shift : component address_shift_register port map
@@ -238,12 +235,9 @@ begin
 		g => G,
 		b => B,
 		hsync => HSYNC,
-		vsync => hy, --VSYNC,
-		pc => open,
-		rs => '0',
+		vsync => VSYNC,
+		rs => reset,
 		clk => CLK50
 	);
-	
-	VSYNC <= hy;
 	
 end architecture a0;
