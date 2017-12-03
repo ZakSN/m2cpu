@@ -5,19 +5,24 @@ use ieee.numeric_std.all;
 entity vertical_signal is
 generic
 (
-	-- length of time in pixel_clk cycle lengths
+	-- constants for vertical resolution
+	-- units of lines
 	front_porch : integer;
 	sync_pulse : integer;
 	back_porch : integer;
 	active_video : integer;
+	-- polarity of sync pulse
 	sync_pulse_pol : std_logic;
+	-- constant for line length
+	-- unit of pixels
 	pixel_per_line : integer
 ); 
 port
 (
 	vsync_out : out std_logic; -- vertical sync
 	len_out : out std_logic; -- line enable
-	clk : in std_logic;
+	y : out integer; -- current line number -1 during blanking period
+	clk : in std_logic; -- pixel clock in
 	rs : in std_logic -- async reset
 );
 end entity vertical_signal;
@@ -42,6 +47,7 @@ begin
 			len <= '0';
 			vsync <= '0';
 			line_counter <= 1;
+			y <= -1;
 		elsif (rising_edge(clk)) then
 			
 			if (line_counter = line_number) then
@@ -53,15 +59,19 @@ begin
 			if (line_counter <= (front_porch * pixel_per_line)) then
 				len <= '0';
 				vsync <= NOT(sync_pulse_pol);
+				y <= -1;
 			elsif ((line_counter > (front_porch * pixel_per_line)) AND (line_counter <= fpsp)) then
 				len <= '0';
 				vsync <= sync_pulse_pol;
+				y <= -1;
 			elsif ((line_counter > fpsp) AND (line_counter <= fpspbp)) then
 				len <= '0';
 				vsync <= NOT(sync_pulse_pol);
+				y <= -1;
 			else
 				len <= '1';
 				vsync <= NOT(sync_pulse_pol);
+				y <= line_number - fpspbp - 1; 
 			end if;
 			
 		else 

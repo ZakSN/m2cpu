@@ -1,5 +1,6 @@
 library ieee;
 use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity m2cpu_top is port
 (
@@ -91,13 +92,16 @@ architecture a0 of m2cpu_top is
 	
 	component video_generator is port
 	(
-		signal r : out std_logic_vector(3 downto 0);
-		signal g : out std_logic_vector(3 downto 0);
-		signal b : out std_logic_vector(3 downto 0);
-		signal hsync : out std_logic;
-		signal vsync : out std_logic;
-		signal rs : in std_logic;
-		signal clk : in std_logic
+		r : out std_logic_vector(3 downto 0); -- colour channels
+		g : out std_logic_vector(3 downto 0);
+		b : out std_logic_vector(3 downto 0);
+		hsync : out std_logic; -- sync channels
+		vsync : out std_logic;
+		x : out integer; -- x of current pixel (range of 0..horizontal active_video - 1)
+		y : out integer; -- y of current pixel (range of 0..vertical active_video - 1)
+		pixel : in std_logic; -- value of (x,y) (on or off)
+		rs : in std_logic;
+		clk : in std_logic
 	);
 	end component video_generator;
 
@@ -124,6 +128,9 @@ architecture a0 of m2cpu_top is
 	signal slow_clk : std_logic;
 	
 	signal disp_bus : std_logic_vector(31 downto 0);
+	
+	signal pixel_x : integer;
+	signal pixel_y : integer;
 	
 begin
 
@@ -236,6 +243,9 @@ begin
 		b => B,
 		hsync => HSYNC,
 		vsync => VSYNC,
+		x => pixel_x,
+		y => pixel_y,
+		pixel => std_logic_vector(to_unsigned(pixel_x * pixel_y, 32))(0),
 		rs => reset,
 		clk => CLK50
 	);
