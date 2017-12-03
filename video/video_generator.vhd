@@ -15,6 +15,15 @@ end entity video_generator;
 
 architecture a0 of video_generator is
 
+	component pixel_pll is port
+	(
+		areset		: IN STD_LOGIC  := '0';
+		inclk0		: IN STD_LOGIC  := '0';
+		c0		: OUT STD_LOGIC ;
+		locked		: OUT STD_LOGIC 
+	);
+	end component pixel_pll;
+
 	component horizontal_signal is
 	generic
 	(
@@ -22,14 +31,15 @@ architecture a0 of video_generator is
 		front_porch : integer;
 		sync_pulse : integer;
 		back_porch : integer;
-		active_video : integer
+		active_video : integer;
+		sync_pulse_pol : std_logic
 	);
 	port
 	(
 		hsync_out : out std_logic; -- horizontal sync
 		cen_out : out std_logic; -- colour eneable
-		line_clk_out : out std_logic;
 		clk : in std_logic; -- pixel clock in
+		pixel : out std_logic;
 		rs : in std_logic -- async reset
 	);
 	end component horizontal_signal;
@@ -41,7 +51,9 @@ architecture a0 of video_generator is
 		front_porch : integer;
 		sync_pulse : integer;
 		back_porch : integer;
-		active_video : integer
+		active_video : integer;
+		sync_pulse_pol : std_logic;
+		pixel_per_line : integer
 	); 
 	port
 	(
@@ -52,29 +64,25 @@ architecture a0 of video_generator is
 	);
 	end component vertical_signal;
 
-	signal pixel_clk : std_logic;
-	signal line_clk : std_logic;
 	signal v_colour_bus : std_logic_vector(11 downto 0);
 	signal colour_bus : std_logic_vector(11 downto 0);
 	signal h_enable : std_logic;
 	signal v_enable : std_logic;
+	signal pixel_clk : std_logic;
+	signal p : std_logic;
 	
 begin
-
-	-- TFF to get 25MHz
-	tff : process (clk, rs)
-	begin
-		if (rs = '1') then
-			pixel_clk <= '0';
-		elsif (rising_edge(clk)) then
-			pixel_clk <= NOT(pixel_clk);
-		else
-			pixel_clk <= pixel_clk;
-		end if;
-	end process tff;
+	
+	pixel_clk_pll : component pixel_pll port map
+	(
+		areset => rs,
+		inclk0 => clk,
+		c0	=> pixel_clk,
+		locked => open 
+	);
 	
 	-- Generate the actual 'video' should just be a solid fill
-	v_colour_bus <= "111111111111" when h_enable = '1' else "000000000000";
+	v_colour_bus <= "0000" & p & p & p & p & "0000" when h_enable = '1' else "000000000000";
 	colour_bus <= v_colour_bus when v_enable = '1' else "000000000000";
 	r <= colour_bus(11 downto 8);
 	g <= colour_bus(7 downto 4);
@@ -83,17 +91,18 @@ begin
 	h_sig : component horizontal_signal
 	generic map
 	(
-		front_porch => 15,
-		sync_pulse => 95,
-		back_porch => 47,
-		active_video => 637
+		front_porch => 16,
+		sync_pulse => 96,
+		back_porch => 48,
+		active_video => 640,
+		sync_pulse_pol => '0'
 	)
 	port map
 	(
 		hsync_out => hsync,
 		cen_out => h_enable,
-		line_clk_out => line_clk,
 		clk => pixel_clk,
+		pixel => p,
 		rs => rs
 	);
 	
@@ -103,13 +112,15 @@ begin
 		front_porch => 10,
 		sync_pulse => 2,
 		back_porch => 33,
-		active_video => 480
+		active_video => 480,
+		sync_pulse_pol => '0',
+		pixel_per_line => 800
 	)
 	port map
 	(
 		vsync_out => vsync,
 		len_out => v_enable,
-		clk => line_clk,
+		clk => pixel_clk,
 		rs => rs
 	);
 	

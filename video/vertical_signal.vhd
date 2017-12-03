@@ -9,22 +9,24 @@ generic
 	front_porch : integer;
 	sync_pulse : integer;
 	back_porch : integer;
-	active_video : integer
+	active_video : integer;
+	sync_pulse_pol : std_logic;
+	pixel_per_line : integer
 ); 
 port
 (
 	vsync_out : out std_logic; -- vertical sync
 	len_out : out std_logic; -- line enable
-	clk : in std_logic; -- line clock in
+	clk : in std_logic;
 	rs : in std_logic -- async reset
 );
 end entity vertical_signal;
 
 architecture a0 of vertical_signal is
 
-	constant line_number : integer := front_porch + sync_pulse + back_porch + active_video;
-	constant fpsp : integer := front_porch + sync_pulse;
-	constant fpspbp : integer := front_porch + sync_pulse + back_porch;
+	constant line_number : integer := (front_porch + sync_pulse + back_porch + active_video) * pixel_per_line;
+	constant fpsp : integer := (front_porch + sync_pulse) * pixel_per_line;
+	constant fpspbp : integer := (front_porch + sync_pulse + back_porch) * pixel_per_line;
 	signal line_counter : integer := 1;
 	signal len : std_logic;
 	signal vsync : std_logic;
@@ -48,18 +50,18 @@ begin
 				line_counter <= line_counter + 1;
 			end if;
 			
-			if (line_counter <= front_porch) then
+			if (line_counter <= (front_porch * pixel_per_line)) then
 				len <= '0';
-				vsync <= '1';
-			elsif ((line_counter > front_porch) AND (line_counter <= fpsp)) then
+				vsync <= NOT(sync_pulse_pol);
+			elsif ((line_counter > (front_porch * pixel_per_line)) AND (line_counter <= fpsp)) then
 				len <= '0';
-				vsync <= '0';
+				vsync <= sync_pulse_pol;
 			elsif ((line_counter > fpsp) AND (line_counter <= fpspbp)) then
 				len <= '0';
-				vsync <= '1';
+				vsync <= NOT(sync_pulse_pol);
 			else
 				len <= '1';
-				vsync <= '1';
+				vsync <= NOT(sync_pulse_pol);
 			end if;
 			
 		else 
