@@ -40,13 +40,17 @@ architecture a0 of m2cpu_top is
 	
 	component memory is port
 	(
-		address	: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		address_a		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
+		address_b		: IN STD_LOGIC_VECTOR (15 DOWNTO 0);
 		clock		: IN STD_LOGIC  := '1';
-		data		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
-		wren		: IN STD_LOGIC ;
-		q			: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
+		data_a		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		data_b		: IN STD_LOGIC_VECTOR (7 DOWNTO 0);
+		wren_a		: IN STD_LOGIC  := '0';
+		wren_b		: IN STD_LOGIC  := '0';
+		q_a		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0);
+		q_b		: OUT STD_LOGIC_VECTOR (7 DOWNTO 0)
 	);
-	end component;
+	end component memory;
 	
 	component clock_divider is 
 	generic
@@ -90,21 +94,23 @@ architecture a0 of m2cpu_top is
 	);
 	end component central_processing_unit;
 	
-	component video_generator is port
+	component text_console is port
 	(
-		r : out std_logic_vector(3 downto 0); -- colour channels
+		-- VGA video signals
+		r : out std_logic_vector(3 downto 0);
 		g : out std_logic_vector(3 downto 0);
 		b : out std_logic_vector(3 downto 0);
-		hsync : out std_logic; -- sync channels
+		hsync : out std_logic;
 		vsync : out std_logic;
-		x : out integer; -- x of current pixel (range of 0..horizontal active_video - 1)
-		y : out integer; -- y of current pixel (range of 0..vertical active_video - 1)
-		pixel : in std_logic; -- value of (x,y) (on or off)
+		-- memory access signals
+		byte_to_display : in std_logic_vector(7 downto 0);
+		address : out std_logic_vector(15 downto 0);
+		--
 		rs : in std_logic;
 		clk : in std_logic
 	);
-	end component video_generator;
-
+	end component  text_console;
+	
 ------------------signal section----------------------------
 	signal sys_clk : std_logic; -- system clock
 	signal MODE : std_logic_vector(1 downto 0); -- the mode that the computer is in: program, single step, low speed, full speed
@@ -129,9 +135,9 @@ architecture a0 of m2cpu_top is
 	
 	signal disp_bus : std_logic_vector(31 downto 0);
 	
-	signal pixel_x : integer;
-	signal pixel_y : integer;
-	
+	signal console_addr_bus : std_logic_vector(15 downto 0);
+	signal console_data_bus : std_logic_vector(7 downto 0);
+		
 begin
 
 	nkey <= NOT(KEY);
@@ -176,11 +182,21 @@ begin
 	
 	MEM : component memory port map
 	(
-		address	=> mem_addr_bus_in,
-		clock		=> mem_clk,
-		data		=> mem_data_bus_in,
-		wren		=> mem_mem_wren,
-		q			=> mem_data_bus_out
+--		address	=> mem_addr_bus_in,
+--		clock		=> mem_clk,
+--		data		=> mem_data_bus_in,
+--		wren		=> mem_mem_wren,
+--		q			=> mem_data_bus_out
+
+		address_a => mem_addr_bus_in,
+		address_b => console_addr_bus,
+		clock => mem_clk,
+		data_a => mem_data_bus_in,
+		data_b => "00000000",
+		wren_a => mem_mem_wren,
+		wren_b => '0',
+		q_a => mem_data_bus_out,
+		q_b => console_data_bus
 	);
 	
 	CPU : component central_processing_unit port map
@@ -234,18 +250,19 @@ begin
 		hex_out_lo => HEX0
 	);
 	
-	
-	----------------------------video experimentation-----------------------------
-	vid_gen : component video_generator port map
+	--------VGA text console--------
+	console : component text_console port map
 	(
+		-- VGA video signals
 		r => R,
 		g => G,
 		b => B,
 		hsync => HSYNC,
 		vsync => VSYNC,
-		x => pixel_x,
-		y => pixel_y,
-		pixel => std_logic_vector(to_unsigned(pixel_x * pixel_y, 32))(0),
+		-- memory access signals
+		byte_to_display => console_data_bus,
+		address => console_addr_bus,
+		--
 		rs => reset,
 		clk => CLK50
 	);
