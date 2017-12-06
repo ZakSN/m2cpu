@@ -182,12 +182,6 @@ begin
 	
 	MEM : component memory port map
 	(
---		address	=> mem_addr_bus_in,
---		clock		=> mem_clk,
---		data		=> mem_data_bus_in,
---		wren		=> mem_mem_wren,
---		q			=> mem_data_bus_out
-
 		address_a => mem_addr_bus_in,
 		address_b => console_addr_bus,
 		clock => mem_clk,
@@ -222,7 +216,7 @@ begin
 					  '0' when others;
 	mem_clk <= CLK50 when MODE = "00" else sys_clk;
 	
-	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else cpu_debug_out;
+	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else console_data_bus & cpu_debug_out(23 downto 0);
 	
 	LED(7 downto 0) <= disp_bus(31 downto 24);
 	

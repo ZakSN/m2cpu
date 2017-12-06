@@ -8,8 +8,8 @@ entity video_generator is port
 	b : out std_logic_vector(3 downto 0);
 	hsync : out std_logic; -- sync channels
 	vsync : out std_logic;
-	x : out integer; -- x of current pixel (range of 0..horizontal active_video - 1)
-	y : out integer; -- y of current pixel (range of 0..vertical active_video - 1)
+	x_en : out std_logic; -- 1 when active video
+	y_en : out std_logic; -- 1 when active video
 	pixel : in std_logic; -- value of (x,y) (on or off)
 	rs : in std_logic;
 	clk : in std_logic
@@ -31,7 +31,6 @@ architecture a0 of video_generator is
 	(
 		hsync_out : out std_logic;
 		cen_out : out std_logic;
-		x : out integer;
 		clk : in std_logic;
 		rs : in std_logic
 	);
@@ -51,7 +50,6 @@ architecture a0 of video_generator is
 	(
 		vsync_out : out std_logic;
 		len_out : out std_logic;
-		y : out integer;
 		clk : in std_logic;
 		rs : in std_logic
 	);
@@ -64,6 +62,9 @@ architecture a0 of video_generator is
 	signal pixel_clk : std_logic;
 	
 begin
+	
+	x_en <= h_enable;
+	y_en <= v_enable;
 	
 	-- output pixel, manage blanking
 	v_colour_bus <= (7 downto 4 => pixel, others => '0') when h_enable = '1' else "000000000000";
@@ -87,7 +88,6 @@ begin
 	(
 		hsync_out => hsync,
 		cen_out => h_enable,
-		x => x,
 		clk => clk,
 		rs => rs
 	);
@@ -108,7 +108,6 @@ begin
 	(
 		vsync_out => vsync,
 		len_out => v_enable,
-		y => y,
 		clk => clk,
 		rs => rs
 	);

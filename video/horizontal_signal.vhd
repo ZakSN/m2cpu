@@ -19,7 +19,6 @@ port
 	hsync_out : out std_logic; -- horizontal sync
 	cen_out : out std_logic; -- colour eneable
 	clk : in std_logic; -- pixel clock in
-	x : out integer; -- current pixel number, -1 during blanking period
 	rs : in std_logic -- async reset
 );
 end entity horizontal_signal;
@@ -29,7 +28,7 @@ architecture a0 of horizontal_signal is
 	constant pixel_number : integer := front_porch + sync_pulse + back_porch + active_video;
 	constant fpsp : integer := front_porch + sync_pulse;
 	constant fpspbp : integer := front_porch + sync_pulse + back_porch;
-	signal pixel_counter : integer := 1;
+	signal pixel_counter : integer :=0;
 	signal cen : std_logic;
 	signal hsync : std_logic;
 	
@@ -43,12 +42,11 @@ begin
 		if (rs = '1') then
 			cen <= '0';
 			hsync <= '0';
-			pixel_counter <= 1;
-			x <= -1;
+			pixel_counter <= 0;
 		elsif (rising_edge(clk)) then
 		
-			if (pixel_counter = pixel_number) then
-				pixel_counter <= 1;
+			if (pixel_counter = pixel_number - 1) then
+				pixel_counter <= 0;
 			else
 				pixel_counter <= pixel_counter + 1;
 			end if;
@@ -56,19 +54,15 @@ begin
 			if (pixel_counter <= front_porch) then
 				cen <= '0';
 				hsync <= NOT(sync_pulse_pol);
-				x <= -1;
 			elsif ((pixel_counter > front_porch) AND (pixel_counter <= fpsp)) then
 				cen <= '0';
 				hsync <= sync_pulse_pol;
-				x <= -1;
 			elsif ((pixel_counter > fpsp) AND (pixel_counter <= fpspbp)) then
 				cen <= '0';
 				hsync <= NOT(sync_pulse_pol);
-				x <= -1;
 			else
 				cen <= '1';
 				hsync <= NOT(sync_pulse_pol);
-				x <= pixel_counter - fpspbp - 1;
 			end if;
 			
 		else
