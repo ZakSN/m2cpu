@@ -23,19 +23,21 @@ begin
 	
 	counter : process(clk, rs)
 	begin
-		if (rs = '1') then
-			sl_num <= "00000";
-			l_num <= 0;
-		elsif (rising_edge(clk)) then
-			if (sl_num = "11000") then
-				sl_num <= "00000";
-				l_num <= l_num + 1;
-			else
-				sl_num <= std_logic_vector(unsigned(sl_num) + 1);
-				l_num <= l_num;
-			end if;
-			if (l_num = 24) then
+		if (rising_edge(clk)) then
+			if (rs = '1') then
+				sl_num <= "11000"; -- tweak to fix OBOE somewhere... 
 				l_num <= 0;
+			else
+				if (sl_num = "11000") then
+					sl_num <= "00000";
+					l_num <= l_num + 1;
+				else
+					sl_num <= std_logic_vector(unsigned(sl_num) + 1);
+					l_num <= l_num;
+				end if;
+				if (l_num = 24) then
+					l_num <= 0;
+				end if;
 			end if;
 		else
 			sl_num <= sl_num;

@@ -129,7 +129,7 @@ begin
 	(
 		scan_line_number => current_char_scan_line,
 		line_number => l_num,
-		clk => end_scan_line, --x_en,
+		clk => x_en,
 		rs => lc_rst
 	);
 

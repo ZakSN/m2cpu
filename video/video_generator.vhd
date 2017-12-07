@@ -78,9 +78,10 @@ begin
 	generic map
 	(
 		-- set x resolution
-		front_porch => 56,
+		-- 3 pixel timing shift to get image to display properly
+		front_porch => 53, -- should be 56
 		sync_pulse => 120,
-		back_porch => 64,
+		back_porch => 67, -- should be 64
 		active_video => 800,
 		sync_pulse_pol => '1'
 	)

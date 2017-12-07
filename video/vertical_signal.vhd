@@ -54,13 +54,13 @@ begin
 				line_counter <= line_counter + 1;
 			end if;
 			
-			if (line_counter <= (front_porch * pixel_per_line)) then
+			if (line_counter < (front_porch * pixel_per_line)) then
 				len <= '0';
 				vsync <= NOT(sync_pulse_pol);
-			elsif ((line_counter > (front_porch * pixel_per_line)) AND (line_counter <= fpsp)) then
+			elsif ((line_counter >= (front_porch * pixel_per_line)) AND (line_counter < fpsp)) then
 				len <= '0';
 				vsync <= sync_pulse_pol;
-			elsif ((line_counter > fpsp) AND (line_counter <= fpspbp)) then
+			elsif ((line_counter >= fpsp) AND (line_counter < fpspbp)) then
 				len <= '0';
 				vsync <= NOT(sync_pulse_pol);
 			else

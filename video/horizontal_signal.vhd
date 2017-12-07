@@ -51,13 +51,13 @@ begin
 				pixel_counter <= pixel_counter + 1;
 			end if;
 			
-			if (pixel_counter <= front_porch) then
+			if (pixel_counter < front_porch) then
 				cen <= '0';
 				hsync <= NOT(sync_pulse_pol);
-			elsif ((pixel_counter > front_porch) AND (pixel_counter <= fpsp)) then
+			elsif ((pixel_counter >= front_porch) AND (pixel_counter < fpsp)) then
 				cen <= '0';
 				hsync <= sync_pulse_pol;
-			elsif ((pixel_counter > fpsp) AND (pixel_counter <= fpspbp)) then
+			elsif ((pixel_counter >= fpsp) AND (pixel_counter < fpspbp)) then
 				cen <= '0';
 				hsync <= NOT(sync_pulse_pol);
 			else

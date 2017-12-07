@@ -26,27 +26,29 @@ begin
 
 	counter : process (clk, rs)
 	begin
-		if (rs = '1') then
-			pix_num <= "0000";
-			char_num <= 0;
-			eol <= '0';
-		elsif (rising_edge(clk)) then
-			if (pix_num = "1001") then
+		if (rising_edge(clk)) then
+			if (rs = '1') then
 				pix_num <= "0000";
-				char_num <= char_num + 1;
-			else
-				pix_num <= std_logic_vector(unsigned(pix_num) + 1);
-				char_num <= char_num;
-			end if;
-			if (char_num = 79) then
 				char_num <= 0;
-				eol <= '1';
-			elsif (char_num = 0) then
-				eol <= '1';
-				char_num <= char_num;
-			else
-				char_num <= char_num;
 				eol <= '0';
+			else
+				if (pix_num = "1001") then
+					pix_num <= "0000";
+					char_num <= char_num + 1;
+				else
+					pix_num <= std_logic_vector(unsigned(pix_num) + 1);
+					char_num <= char_num;
+				end if;
+				if (char_num = 79) then
+					char_num <= 0;
+					eol <= eol;
+				elsif (char_num = 0) then
+					eol <= '1';
+					char_num <= char_num;
+				else
+					char_num <= char_num;
+					eol <= '0';
+				end if;
 			end if;
 		else
 			pix_num <= pix_num;
