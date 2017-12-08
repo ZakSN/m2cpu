@@ -26,7 +26,7 @@ begin
 		if (rising_edge(clk)) then
 			if (rs = '1') then
 				sl_num <= "11000"; -- tweak to fix OBOE somewhere... 
-				l_num <= 0;
+				l_num <= 24;
 			else
 				if (sl_num = "11000") then
 					sl_num <= "00000";

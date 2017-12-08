@@ -10,11 +10,15 @@ entity byte_to_text is port
 end entity byte_to_text;
 
 architecture a0 of byte_to_text is
+
+	signal lo : std_logic_vector(9 downto 0);
+
 begin
 
-	with byte_in & line_sel select
-		line_out <= "1111111111" when "1111111100000",
-						"1010101010" when "1111111111000",
+	with line_sel select
+		lo <= "1111111111" when "00000",
+						"1010101010" when "11000",
 						"100000000" & line_sel(0) when others;
+	line_out <= lo when byte_in = "11111111" else "0000000000";
 
 end architecture a0;
