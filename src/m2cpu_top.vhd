@@ -103,7 +103,7 @@ architecture a0 of m2cpu_top is
 		hsync : out std_logic;
 		vsync : out std_logic;
 		-- memory access signals
-		byte_to_display : in std_logic_vector(7 downto 0);
+		byte_in : in std_logic_vector(7 downto 0);
 		address : out std_logic_vector(15 downto 0);
 		--
 		rs : in std_logic;
@@ -216,7 +216,7 @@ begin
 					  '0' when others;
 	mem_clk <= CLK50 when MODE = "00" else sys_clk;
 	
-	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else console_data_bus & cpu_debug_out(23 downto 0);
+	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else console_data_bus & "00000000" & console_addr_bus;--cpu_debug_out(23 downto 0);
 	
 	LED(7 downto 0) <= disp_bus(31 downto 24);
 	
@@ -254,7 +254,7 @@ begin
 		hsync => HSYNC,
 		vsync => VSYNC,
 		-- memory access signals
-		byte_to_display => console_data_bus,
+		byte_in => console_data_bus,
 		address => console_addr_bus,
 		--
 		rs => reset,

@@ -6,8 +6,8 @@ entity character_counter is port
 (
 	pixel_number : out std_logic_vector(3 downto 0);
 	character_number : out integer;
-	clk : in std_logic;
-	rs : in std_logic
+	rs : in std_logic;
+	clk : in std_logic
 );
 end entity character_counter;
 

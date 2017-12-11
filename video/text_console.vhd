@@ -11,7 +11,7 @@ entity text_console is port
 	hsync : out std_logic;
 	vsync : out std_logic;
 	-- memory access signals
-	byte_to_display : in std_logic_vector(7 downto 0);
+	byte_in : in std_logic_vector(7 downto 0);
 	address : out std_logic_vector(15 downto 0);
 	--
 	rs : in std_logic;
@@ -48,8 +48,8 @@ architecture a0 of text_console is
 	(
 		pixel_number : out std_logic_vector(3 downto 0);
 		character_number : out integer;
-		clk : in std_logic;
-		rs : in std_logic
+		rs : in std_logic;
+		clk : in std_logic
 	);
 	end component character_counter;
 	
@@ -57,8 +57,8 @@ architecture a0 of text_console is
 	(
 		scan_line_number : out std_logic_vector(4 downto 0);
 		line_number : out integer;
-		clk : in std_logic;
-		rs : in std_logic
+		rs : in std_logic;
+		clk : in std_logic
 	);
 	end component line_counter;
 	
@@ -68,7 +68,9 @@ architecture a0 of text_console is
 		line_n : in integer;
 		char_out : out std_logic_vector(7 downto 0);
 		char_in : in std_logic_vector(7 downto 0);
-		write_char : in std_logic
+		address : out std_logic_vector(15 downto 0);
+		rs : in std_logic;
+		clk : in std_logic
 	);
 	end component screen_buffer;
 	
@@ -82,22 +84,10 @@ architecture a0 of text_console is
 	signal lc_rst : std_logic;
 	signal c_num : integer;
 	signal l_num : integer;
-	
-	signal b_t_d : std_logic_vector(7 downto 0);
+	signal char_to_disp : std_logic_vector(7 downto 0);
 
 begin
 
-	--address <= std_logic_vector(to_unsigned(16#F880#, 16)) when c_num > 40 else std_logic_vector(to_unsigned(16#F87F#, 16));-- + c_num + (80 * l_num), 16));
-
-	sb : component screen_buffer port map
-	(
-		char_n => c_num,
-		line_n => l_num,
-		char_out => b_t_d,
-		char_in => "11111111",
-		write_char => '0'
-	);
-	
 	vid_gen : component video_generator port map
 	(
 		r => r,
@@ -115,13 +105,24 @@ begin
 	cc_rst <= NOT(x_en);
 	lc_rst <= NOT(y_en);
 	
+	sb : component screen_buffer port map
+	(
+		char_n => c_num,
+		line_n => l_num,
+		char_out => char_to_disp,
+		char_in => byte_in,
+		address => address,
+		rs => x_en,
+		clk => clk
+	);
+	
 	char_gen : component byte_to_text port map
 	(
-		byte_in => b_t_d,
+		byte_in => char_to_disp,
 		line_out => current_char_current_line,
 		line_sel => current_char_scan_line
 	);
-	
+		
 	with current_char_pixel select
 		pixel <= current_char_current_line(9) when "0000",
 					current_char_current_line(8) when "0001",
@@ -139,16 +140,16 @@ begin
 	(
 		pixel_number => current_char_pixel,
 		character_number => c_num,
-		clk => clk,
-		rs => cc_rst
+		rs => cc_rst,
+		clk => clk
 	);
 	
 	lc : component line_counter port map
 	(
 		scan_line_number => current_char_scan_line,
 		line_number => l_num,
-		clk => x_en,
-		rs => lc_rst
+		rs => lc_rst,
+		clk => x_en
 	);
 
 end architecture a0;

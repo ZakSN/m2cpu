@@ -73,7 +73,7 @@ BEGIN
 		clock_enable_output_a => "BYPASS",
 		clock_enable_output_b => "BYPASS",
 		indata_reg_b => "CLOCK0",
-		init_file => "../video/test_screen.hex",
+		init_file => "../video/font_demo.hex",
 		intended_device_family => "MAX 10",
 		lpm_type => "altsyncram",
 		numwords_a => 65536,
@@ -84,9 +84,9 @@ BEGIN
 		outdata_reg_a => "CLOCK0",
 		outdata_reg_b => "CLOCK0",
 		power_up_uninitialized => "FALSE",
-		read_during_write_mode_mixed_ports => "DONT_CARE",
-		read_during_write_mode_port_a => "NEW_DATA_WITH_NBE_READ",
-		read_during_write_mode_port_b => "NEW_DATA_WITH_NBE_READ",
+		read_during_write_mode_mixed_ports => "OLD_DATA",
+		read_during_write_mode_port_a => "OLD_DATA",
+		read_during_write_mode_port_b => "OLD_DATA",
 		widthad_a => 16,
 		widthad_b => 16,
 		width_a => 8,
@@ -146,14 +146,14 @@ END SYN;
 -- Retrieval info: PRIVATE: MAXIMUM_DEPTH NUMERIC "0"
 -- Retrieval info: PRIVATE: MEMSIZE NUMERIC "524288"
 -- Retrieval info: PRIVATE: MEM_IN_BITS NUMERIC "0"
--- Retrieval info: PRIVATE: MIFfilename STRING "../video/test_screen.hex"
+-- Retrieval info: PRIVATE: MIFfilename STRING "../video/font_demo.hex"
 -- Retrieval info: PRIVATE: OPERATION_MODE NUMERIC "3"
 -- Retrieval info: PRIVATE: OUTDATA_ACLR_B NUMERIC "0"
 -- Retrieval info: PRIVATE: OUTDATA_REG_B NUMERIC "1"
 -- Retrieval info: PRIVATE: RAM_BLOCK_TYPE NUMERIC "0"
--- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_MIXED_PORTS NUMERIC "2"
--- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_A NUMERIC "4"
--- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_B NUMERIC "4"
+-- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_MIXED_PORTS NUMERIC "1"
+-- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_A NUMERIC "1"
+-- Retrieval info: PRIVATE: READ_DURING_WRITE_MODE_PORT_B NUMERIC "1"
 -- Retrieval info: PRIVATE: REGdata NUMERIC "1"
 -- Retrieval info: PRIVATE: REGq NUMERIC "1"
 -- Retrieval info: PRIVATE: REGrdaddress NUMERIC "0"
@@ -180,7 +180,7 @@ END SYN;
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_A STRING "BYPASS"
 -- Retrieval info: CONSTANT: CLOCK_ENABLE_OUTPUT_B STRING "BYPASS"
 -- Retrieval info: CONSTANT: INDATA_REG_B STRING "CLOCK0"
--- Retrieval info: CONSTANT: INIT_FILE STRING "../video/test_screen.hex"
+-- Retrieval info: CONSTANT: INIT_FILE STRING "../video/font_demo.hex"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "MAX 10"
 -- Retrieval info: CONSTANT: LPM_TYPE STRING "altsyncram"
 -- Retrieval info: CONSTANT: NUMWORDS_A NUMERIC "65536"
@@ -191,9 +191,9 @@ END SYN;
 -- Retrieval info: CONSTANT: OUTDATA_REG_A STRING "CLOCK0"
 -- Retrieval info: CONSTANT: OUTDATA_REG_B STRING "CLOCK0"
 -- Retrieval info: CONSTANT: POWER_UP_UNINITIALIZED STRING "FALSE"
--- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "DONT_CARE"
--- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_A STRING "NEW_DATA_WITH_NBE_READ"
--- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_B STRING "NEW_DATA_WITH_NBE_READ"
+-- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_MIXED_PORTS STRING "OLD_DATA"
+-- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_A STRING "OLD_DATA"
+-- Retrieval info: CONSTANT: READ_DURING_WRITE_MODE_PORT_B STRING "OLD_DATA"
 -- Retrieval info: CONSTANT: WIDTHAD_A NUMERIC "16"
 -- Retrieval info: CONSTANT: WIDTHAD_B NUMERIC "16"
 -- Retrieval info: CONSTANT: WIDTH_A NUMERIC "8"

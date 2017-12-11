@@ -6,8 +6,8 @@ entity line_counter is port
 (
 	scan_line_number : out std_logic_vector(4 downto 0);
 	line_number : out integer;
-	clk : in std_logic;
-	rs : in std_logic
+	rs : in std_logic;
+	clk : in std_logic
 );
 end entity line_counter;
 
