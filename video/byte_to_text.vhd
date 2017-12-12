@@ -11,26 +11,26 @@ entity byte_to_text is port
 end entity byte_to_text;
 
 architecture a0 of byte_to_text is
-
-	constant non_printing : integer := 33; --33 non printing ascii chars, no point in encoding them cause they all look the same
+	constant non_printing : integer := 33;
+	constant char_set_size : integer := 112;
 	signal lo : std_logic_vector(9 downto 0);
-	type font_rom_array is array (((256 - non_printing) * 25) - 1 downto 0) of std_logic_vector(9 downto 0);
+	type font_rom_array is array (0 to (char_set_size * 25) - 1) of std_logic_vector(9 downto 0);
 	signal font_rom : font_rom_array;
 	signal byte_num : integer;
 	signal line_num : integer;
+	signal c_t_p : integer;
 	signal char_to_print : integer;
 
 begin
 
 	byte_num <= to_integer(unsigned(byte_in));
 	line_num <= to_integer(unsigned(line_sel));
-	char_to_print <= byte_num - non_printing when byte_num >= 32 else 152;
-	-- the next line calculates the specific scan line vector to return
-	-- char_to_print is the byte number minus the non printing chars
-	-- each char is 25 scanlines tall so we multiple by 25
-	-- finally we subtract line_num from 25 so that the char appears on screen as we specify below
-	-- otherwise the char appears upside down, not quite sure why, probably need to think about this some more.
-	line_out <= font_rom((char_to_print * 25) + (25 - line_num));
+	-- assuming that all chars we recieve print as either a space or map to a printing char
+	-- non printing chars (zero-width) need to be filtered out earlier. 
+	-- by the time we get here we have to print something
+	-- the next line ensures we print something predictable
+	char_to_print <= (byte_num - 32) when (byte_num >= 32) AND (byte_num < 143) else 0;
+	line_out <= font_rom((char_to_print * 25) + line_num);
 	
 -- prototype char:
 -- top five lines and bottom five lines are blanked for
@@ -70,6 +70,33 @@ begin
 -- where X is the particular char
 
 	font_rom <=(
+		--{SPACE
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		--SPACE}
 		--{!
 		"0000000000",
 		"0000000000",
@@ -205,6 +232,33 @@ begin
 		"0000000000",
 		"0000000000",
 		--%}
+		--{&
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0011111100",
+		"0111111110",
+		"0110000110",
+		"0111000110",
+		"0011111100",
+		"0001111000",
+		"0011110000",
+		"0110110000",
+		"0110110000",
+		"0110011000",
+		"0110011000",
+		"0110011110",
+		"0011111110",
+		"0001110110",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		--&}
 		--{'
 		"0000000000",
 		"0000000000",
@@ -340,7 +394,18 @@ begin
 		"0000000000",
 		"0000000000",
 		--+}
-		--{´
+		--{,
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
+		"0000000000",
 		"0000000000",
 		"0000000000",
 		"0000000000",
@@ -355,18 +420,7 @@ begin
 		"0000000000",
 		"0000000000",
 		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		"0000000000",
-		--´}
+		--,}
 		--{-
 		"0000000000",
 		"0000000000",
@@ -1788,8 +1842,8 @@ begin
 		"0001111100",
 		"0011111110",
 		"0000000110",
-		"0000000110",
 		"0011111110",
+		"0111111110",
 		"0110000110",
 		"0110000110",
 		"0111111110",
@@ -1815,8 +1869,8 @@ begin
 		"0110000000",
 		"0110000000",
 		"0110000000",
-		"0110000000",
 		"0111111100",
+		"0111111110",
 		"0110000110",
 		"0110000110",
 		"0111111110",
@@ -1869,8 +1923,8 @@ begin
 		"0000000110",
 		"0000000110",
 		"0000000110",
-		"0000000110",
 		"0011111110",
+		"0111111110",
 		"0110000110",
 		"0110000110",
 		"0111111110",
@@ -1898,7 +1952,7 @@ begin
 		"0110000110",
 		"0110000110",
 		"0111111110",
-		"0110000000",
+		"0111111110",
 		"0110000000",
 		"0110000110",
 		"0011111100",
@@ -1920,10 +1974,10 @@ begin
 		"0000000000",
 		"0000000000",
 		"0000000000",
-		"0000111000",
-		"0001111100",
-		"0011000110",
+		"0001111110",
+		"0011111110",
 		"0011000000",
+		"0111111110",
 		"0111111110",
 		"0011000000",
 		"0011000000",
@@ -1950,7 +2004,7 @@ begin
 		"0011110110",
 		"0111111110",
 		"0110000110",
-		"0110000110",
+		"0111111110",
 		"0011111110",
 		"0000000110",
 		"0110000110",
@@ -2057,9 +2111,9 @@ begin
 		"0000000000",
 		"0110000000",
 		"0110000000",
-		"0110000000",
 		"0110000110",
-		"0111101100",
+		"0110000110",
+		"0111111100",
 		"0110110000",
 		"0110011000",
 		"0110001100",

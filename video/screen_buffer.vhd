@@ -23,7 +23,7 @@ architecture a0 of screen_buffer is
 
 begin
 
-	address <= std_logic_vector(to_unsigned(16#F87F# + address_index + 80 * line_n, 16));
+	address <= std_logic_vector(to_unsigned(16#F87F# + address_index + (80 * line_n), 16));
 
 	char_out <= buff(char_n);
 	
