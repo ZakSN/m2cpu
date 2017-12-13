@@ -11,7 +11,7 @@ entity byte_to_text is port
 end entity byte_to_text;
 
 architecture a0 of byte_to_text is
-	constant non_printing : integer := 33;
+	constant non_printing : integer := 32;
 	constant char_set_size : integer := 112;
 	signal lo : std_logic_vector(9 downto 0);
 	type font_rom_array is array (0 to (char_set_size * 25) - 1) of std_logic_vector(9 downto 0);
@@ -29,7 +29,7 @@ begin
 	-- non printing chars (zero-width) need to be filtered out earlier. 
 	-- by the time we get here we have to print something
 	-- the next line ensures we print something predictable
-	char_to_print <= (byte_num - 32) when (byte_num >= 32) AND (byte_num < 143) else 0;
+	char_to_print <= (byte_num - non_printing) when (byte_num >= non_printing) AND (byte_num < (char_set_size + non_printing - 1)) else 0;
 	line_out <= font_rom((char_to_print * 25) + line_num);
 	
 -- prototype char:
@@ -3018,7 +3018,7 @@ begin
 		"0101010101",
 		"1010101010",
 		--}
-		--{ full block (150)
+		--{ full block (141)
 		"1111111111",
 		"1111111111",
 		"1111111111",
@@ -3045,7 +3045,7 @@ begin
 		"1111111111",
 		"1111111111",
 		--}
-		--{ cursor (151)
+		--{ cursor (142)
 		"0000000000",
 		"0000000000",
 		"0000000000",
