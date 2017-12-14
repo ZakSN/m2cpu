@@ -132,10 +132,10 @@ $cursor_char 0x8E
 		LDH $index_1
 		LDX M
 		ADD
-		LDX A
-		LDY 0x10
-		SUB
 		LDM A
+		LDX A
+		LDY 0x06 #cursor blink speed
+		SUB
 		LDY 0x01
 		LDG +:loop_1
 		LDH -:loop_1
