@@ -123,18 +123,6 @@ set_location_assignment PIN_C17 -to HEX0[6]
 set_location_assignment PIN_D15 -to HEX0[7]
 set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
 set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
-set_global_assignment -name VHDL_FILE src/central_processing_unit.vhd
-set_global_assignment -name VHDL_FILE src/general_purpose_register.vhd
-set_global_assignment -name SOURCE_FILE memory/memory.cmp
-set_global_assignment -name QIP_FILE memory/memory.qip
-set_global_assignment -name VHDL_FILE src/m2cpu_top.vhd
-set_global_assignment -name VHDL_FILE src/seven_seg_decoder.vhd
-set_global_assignment -name VHDL_FILE src/register_8bit.vhd
-set_global_assignment -name VHDL_FILE src/arithmetic_logic_unit.vhd
-set_global_assignment -name VHDL_FILE src/stack_pointer.vhd
-set_global_assignment -name VHDL_FILE src/program_counter.vhd
-set_global_assignment -name VHDL_FILE src/byte_display.vhd
-set_global_assignment -name VHDL_FILE src/clock_divider.vhd
 set_global_assignment -name ENABLE_OCT_DONE ON
 set_global_assignment -name EXTERNAL_FLASH_FALLBACK_ADDRESS 00000000
 set_global_assignment -name STRATIXV_CONFIGURATION_SCHEME "PASSIVE SERIAL"
@@ -145,22 +133,9 @@ set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
 set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
 set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
 set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
-set_global_assignment -name VHDL_FILE src/status_register.vhd
-set_global_assignment -name VHDL_FILE src/instruction_register.vhd
-set_global_assignment -name VHDL_FILE src/branch_decoder.vhd
-set_global_assignment -name HEX_FILE memory/memory_data.hex
-set_global_assignment -name VHDL_FILE src/address_shift_register.vhd
-set_global_assignment -name VHDL_FILE src/debouncer.vhd
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_TIME_SCALE "1 ps" -section_id eda_simulation
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
-set_global_assignment -name VECTOR_WAVEFORM_FILE simulation/mem_test.vwf
-set_global_assignment -name VHDL_FILE src/finite_state_machine.vhd
-set_global_assignment -name VHDL_FILE src/microcode_LUT.vhd
-set_global_assignment -name VHDL_FILE simulation/test_bench.vhd
-set_global_assignment -name VHDL_FILE video/horizontal_signal.vhd
-set_global_assignment -name VHDL_FILE video/vertical_signal.vhd
-set_global_assignment -name VHDL_FILE video/video_generator.vhd
 set_location_assignment PIN_P1 -to B[0]
 set_location_assignment PIN_T1 -to B[1]
 set_location_assignment PIN_P4 -to B[2]
@@ -272,6 +247,31 @@ set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[5]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[7]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[8]
 set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to LED[9]
+set_global_assignment -name VHDL_FILE top/address_shift_register.vhd
+set_global_assignment -name VHDL_FILE top/byte_display.vhd
+set_global_assignment -name VHDL_FILE top/clock_divider.vhd
+set_global_assignment -name VHDL_FILE top/m2cpu_top.vhd
+set_global_assignment -name VHDL_FILE top/debouncer.vhd
+set_global_assignment -name VHDL_FILE top/seven_seg_decoder.vhd
+set_global_assignment -name VHDL_FILE processor/status_register.vhd
+set_global_assignment -name VHDL_FILE processor/arithmetic_logic_unit.vhd
+set_global_assignment -name VHDL_FILE processor/branch_decoder.vhd
+set_global_assignment -name VHDL_FILE processor/central_processing_unit.vhd
+set_global_assignment -name VHDL_FILE processor/finite_state_machine.vhd
+set_global_assignment -name VHDL_FILE processor/general_purpose_register.vhd
+set_global_assignment -name VHDL_FILE processor/instruction_register.vhd
+set_global_assignment -name VHDL_FILE processor/microcode_LUT.vhd
+set_global_assignment -name VHDL_FILE processor/program_counter.vhd
+set_global_assignment -name VHDL_FILE processor/register_8bit.vhd
+set_global_assignment -name VHDL_FILE processor/stack_pointer.vhd
+set_global_assignment -name SOURCE_FILE memory/memory.cmp
+set_global_assignment -name QIP_FILE memory/memory.qip
+set_global_assignment -name HEX_FILE memory/memory_data.hex
+set_global_assignment -name VECTOR_WAVEFORM_FILE simulation/mem_test.vwf
+set_global_assignment -name VHDL_FILE simulation/test_bench.vhd
+set_global_assignment -name VHDL_FILE video/horizontal_signal.vhd
+set_global_assignment -name VHDL_FILE video/vertical_signal.vhd
+set_global_assignment -name VHDL_FILE video/video_generator.vhd
 set_global_assignment -name VHDL_FILE video/text_console.vhd
 set_global_assignment -name VHDL_FILE video/byte_to_text.vhd
 set_global_assignment -name VHDL_FILE video/character_counter.vhd

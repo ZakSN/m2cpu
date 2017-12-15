@@ -20,9 +20,10 @@ A very simple 8 bit computer written in VHDL. Major Project Features:
 |---|---|
 |`doc`|project documentation|
 |`memory`|64K memory source code|
+|`processor`|processor source code|
 |`software`|software written for the processor|
-|`src`|processor source code and project top level|
 |`tools`|tools written for the computer and for development of the computer|
+|`top`|project top level, and some 'front panel' logic|
 |`video`|memory mapped VGA text console|
 
 ## Author
