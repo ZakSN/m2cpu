@@ -11,18 +11,19 @@
 *.smsg
 *.txt
 *.jpg
+*.bak
+*.o
+*.hex
+*.ods#
+*.swp
+
+#ignore directories
 db/
 incremental_db/
 simulation/
+output_files
 
+#ignore specific files
 /tools/microcode_generator/gen_ucode
 /tools/microcode_generator/ucode_gen.vhd
 /tools/assembler/assembler
-*.o
-
-*.hex
-
-*.ods#
-*.swp
-# => excludes *.sof from ignoring.
-#!*.sof
