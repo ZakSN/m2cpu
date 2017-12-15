@@ -116,28 +116,27 @@ architecture a0 of m2cpu_top is
 	signal MODE : std_logic_vector(1 downto 0); -- the mode that the computer is in: program, single step, low speed, full speed
 	signal nkey : std_logic_vector(1 downto 0); -- inverted key signals
 	signal ndkey : std_logic_vector(1 downto 0); -- inverted and debounced key signals
+	signal control_addr_bus_out : std_logic_vector(15 downto 0); -- front panel address (used in program mode)
+	signal disp_bus : std_logic_vector(31 downto 0); -- leds & hex digits (hex digits are grouped as byte & address)
+	signal slow_clk : std_logic;
 	signal reset : std_logic;
-	
+
+	-- signals from cpu
 	signal cpu_data_bus_out : std_logic_vector(7 downto 0);
 	signal cpu_addr_bus_out : std_logic_vector(15 downto 0);
 	signal cpu_mem_wren : std_logic;
 	signal cpu_debug_out : std_logic_vector(31 downto 0);
-	
-	signal control_addr_bus_out : std_logic_vector(15 downto 0);
-	
-	signal mem_addr_bus_in : std_logic_vector(15 downto 0);
-	signal mem_data_bus_in : std_logic_vector(7 downto 0);
-	signal mem_data_bus_out : std_logic_vector(7 downto 0);
-	signal mem_mem_wren : std_logic;
+
+	-- signals to/from memory
+	-- some memory signals have different inputs depending on the mode
+	signal mem_addr_bus_in_a : std_logic_vector(15 downto 0);
+	signal mem_addr_bus_in_b : std_logic_vector(15 downto 0);
+	signal mem_data_bus_in_a : std_logic_vector(7 downto 0);
+	signal mem_data_bus_out_b : std_logic_vector(7 downto 0);
+	signal mem_data_bus_out_a : std_logic_vector(7 downto 0);
+	signal mem_mem_wren_a : std_logic;
 	signal mem_clk : std_logic;
-	
-	signal slow_clk : std_logic;
-	
-	signal disp_bus : std_logic_vector(31 downto 0);
-	
-	signal console_addr_bus : std_logic_vector(15 downto 0);
-	signal console_data_bus : std_logic_vector(7 downto 0);
-		
+
 begin
 
 	nkey <= NOT(KEY);
@@ -149,25 +148,25 @@ begin
 		sw_out => ndkey(0),
 		clk => CLK50
 	);
-	
+
 	debounce_1 : component debouncer port map
 	(
 		sw_in => nkey(1),
 		sw_out => ndkey(1),
 		clk => CLK50
 	);
-	
+
 	MODE <= SW(9 downto 8);
 	LED(8) <= sys_clk; -- shows clock speed
 	LED(9) <= '0' when MODE = "00" else '1'; -- light on when executing
-	
+
 	addr_shift : component address_shift_register port map
 	(
 		byte_in => SW(7 downto 0),
 		word_out => control_addr_bus_out,
 		shift => ndkey(1)
 	);
-	
+
 	clk_div : component clock_divider 
 	generic map
 	(
@@ -179,23 +178,23 @@ begin
 		rst => reset,
 		clkout => slow_clk
 	);
-	
+
 	MEM : component memory port map
 	(
-		address_a => mem_addr_bus_in,
-		address_b => console_addr_bus,
+		address_a => mem_addr_bus_in_a,
+		address_b => mem_addr_bus_in_b,
 		clock => mem_clk,
-		data_a => mem_data_bus_in,
+		data_a => mem_data_bus_in_a,
 		data_b => "00000000",
-		wren_a => mem_mem_wren,
+		wren_a => mem_mem_wren_a,
 		wren_b => '0',
-		q_a => mem_data_bus_out,
-		q_b => console_data_bus
+		q_a => mem_data_bus_out_a,
+		q_b => mem_data_bus_out_b
 	);
-	
+
 	CPU : component central_processing_unit port map
 	(
-		data_bus_in  => mem_data_bus_out,
+		data_bus_in  => mem_data_bus_out_a,
 		data_bus_out => cpu_data_bus_out,
 		addr_bus_out => cpu_addr_bus_out,
 		memory_wren  => cpu_mem_wren,
@@ -203,11 +202,11 @@ begin
 		rst => reset,
 		clk => sys_clk
 	);
-	
-	mem_addr_bus_in <= control_addr_bus_out when MODE = "00" else cpu_addr_bus_out;
-	mem_data_bus_in <= SW(7 downto 0) when MODE = "00" else cpu_data_bus_out;
-	mem_mem_wren <= ndkey(0) when MODE = "00" else cpu_mem_wren;
-	
+
+	mem_addr_bus_in_a <= control_addr_bus_out when MODE = "00" else cpu_addr_bus_out;
+	mem_data_bus_in_a <= SW(7 downto 0) when MODE = "00" else cpu_data_bus_out;
+	mem_mem_wren_a <= ndkey(0) when MODE = "00" else cpu_mem_wren;
+
 	with  MODE select
 		sys_clk <= '0' when "00", -- program mode
 					  ndkey(1) when "01", -- single step mode
@@ -215,11 +214,11 @@ begin
 					  CLK50 when "11", -- full speed mode
 					  '0' when others;
 	mem_clk <= CLK50 when MODE = "00" else sys_clk;
-	
-	disp_bus <= "00000000" & mem_data_bus_out & control_addr_bus_out when MODE = "00" else console_data_bus & "00000000" & console_addr_bus;--cpu_debug_out(23 downto 0);
-	
+
+	disp_bus <= "00000000" & mem_data_bus_out_a & control_addr_bus_out when MODE = "00" else cpu_debug_out(31 downto 0);
+
 	LED(7 downto 0) <= disp_bus(31 downto 24);
-	
+
 	byte_disp : component byte_display port map
 	(
 		byte_in => disp_bus(23 downto 16),
@@ -227,7 +226,7 @@ begin
 		hex_out_hi => HEX5,
 		hex_out_lo => HEX4
 	);
-	
+
 	addr_disp_hi : component byte_display port map
 	(
 		byte_in => disp_bus(15 downto 8),
@@ -235,7 +234,7 @@ begin
 		hex_out_hi => HEX3,
 		hex_out_lo => HEX2
 	);
-	
+
 	addr_disp_lo : component byte_display port map
 	(
 		byte_in => disp_bus(7 downto 0),
@@ -243,22 +242,19 @@ begin
 		hex_out_hi => HEX1,
 		hex_out_lo => HEX0
 	);
-	
-	--------VGA text console--------
+
+	-- note: video only works in full speed mode since it must be synchronised with memory
 	console : component text_console port map
 	(
-		-- VGA video signals
 		r => R,
 		g => G,
 		b => B,
 		hsync => HSYNC,
 		vsync => VSYNC,
-		-- memory access signals
-		byte_in => console_data_bus,
-		address => console_addr_bus,
-		--
+		byte_in => mem_data_bus_out_b,
+		address => mem_addr_bus_in_b,
 		rs => reset,
 		clk => CLK50
 	);
-	
+
 end architecture a0;
