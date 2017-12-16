@@ -86,9 +86,6 @@ $cursor 0x11
 	LDX H
 	ADD
 
-	LDG +:cursor_loop
-	LDH -:cursor_loop
-
 $indices 0x0A
 $index_1 0x01
 $index_2 0x02

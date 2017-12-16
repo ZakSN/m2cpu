@@ -16,6 +16,10 @@
 *.hex
 *.ods#
 *.swp
+*.pdf
+*.aux
+*.dvi
+*.log
 
 #ignore directories
 db/

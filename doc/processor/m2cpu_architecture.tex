@@ -1,0 +1,33 @@
+\documentclass[a4paper,12pt]{article}
+
+\newcommand{\mt}{M2CPU}
+\newcommand{\mi}{M2 instruction set}
+\newcommand{\ma}{M2 architecture}
+
+\title{\mt{} Architecture And Implementation}
+\author{Zakary Nafziger}
+\date{15 December 2017}
+
+\begin{document}
+
+\maketitle
+\pagenumbering{gobble}
+\newpage
+
+\pagenumbering{arabic}
+
+\section{Introduction}
+The \mt{} is a simple subscalar 8-bit processor that implements the 75 
+instruction \mi{}. The \mt{} and \mi{} were designed and implemented by the author
+as a personal hobby project. The \ma{} is intended to be as simple as possible 
+while still being interesting. Some basic information:
+
+\begin{itemize}
+\item 8-bit data and ALU buses
+\item 16-bit address bus; 64KB of addressable memory
+\item 256B zero-page stack
+\item 75 instruction
+\item implemented in VHDL on a MAX10 based development board
+\end{itemize}
+
+\end{document}
