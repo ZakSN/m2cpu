@@ -1,3 +1,4 @@
+TEX=latex
 PDF=pdflatex
 PDFVIEWER=qpdfview
 SPELLCHECK=hunspell
@@ -9,6 +10,7 @@ DOCUMENT=m2cpu_architecture
 all: spelling $(DOCUMENT).pdf view
 
 $(DOCUMENT).pdf: $(DOCUMENT).tex
+	$(TEX) $(DOCUMENT).tex
 	$(PDF) $(DOCUMENT).tex
 
 spelling:
@@ -18,6 +20,9 @@ view: $(DOCUMENT).pdf
 	$(PDFVIEWER) $(DOCUMENT).pdf
 
 clean:
+	rm *.dvi
+	rm *.out
+	rm *.toc
 	rm *.aux
 	rm *.log
 	rm *.pdf

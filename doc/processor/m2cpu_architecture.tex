@@ -1,10 +1,14 @@
 \documentclass[a4paper,12pt]{article}
 
+\PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
+\usepackage[parfill]{parskip}
+\usepackage[utf8]{inputenc}
+
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
 \newcommand{\ma}{M2 architecture}
 
-\title{\mt{} Architecture And Implementation}
+\title{M2 Architecture And Implementation}
 \author{Zakary Nafziger}
 \date{15 December 2017}
 
@@ -14,20 +18,71 @@
 \pagenumbering{gobble}
 \newpage
 
+\tableofcontents
+\pagenumbering{gobble}
+\newpage
+
 \pagenumbering{arabic}
 
 \section{Introduction}
 The \mt{} is a simple subscalar 8-bit processor that implements the 75 
 instruction \mi{}. The \mt{} and \mi{} were designed and implemented by the author
 as a personal hobby project. The \ma{} is intended to be as simple as possible 
-while still being interesting. Some basic information:
+while still being interesting. Some basic information: 
+\par
 
 \begin{itemize}
 \item 8-bit data and ALU buses
 \item 16-bit address bus; 64KB of addressable memory
 \item 256B zero-page stack
-\item 75 instruction
+\item 75 instructions
 \item implemented in VHDL on a MAX10 based development board
 \end{itemize}
+
+This document describes the \mt{}. The \mt{} is only one part of a larger 
+project, the M2 computer. As of this writing the other major components of the
+M2 computer project are an assembler and VGA video system. The assembler and 
+video system are documented seperately. 
+\par
+
+\subsection{Terminology}
+Throughout this document the terms \mt{}, \mi{}, and \ma{} will be used. \mt{} 
+refers to the VHDL processor that implements the \mi{}. The \mi{} is the set of
+75 instructions that make up the M2 assembly language. The \ma{} refers to the
+combination of a processor and instruction set that implement the M2 assembly 
+language. The \mt{} is therefore an implementation of the \ma{}, since it 
+supports the complete \mi{}. However since the \mt{}'s instructions are 
+implemented in microcode it could implement a different architecture. This 
+document describes a complete implementation of the \ma{}, namely the \mt{}.
+\par
+
+The name 'M2' stands for 'Model 2' The 'Model 1' processor was a 4-bit system 
+that was constructed by the Author. The Model 1 was implemented in discrete 
+hardware, (about 1200 resistors and transistors). The Model 1 is documented 
+here: 
+\url{https://hackaday.io/project/665-4-bit-computer-built-from-discrete-transistors}
+\par
+
+\newpage
+\section{Instruction Set}
+\subsection{Instruction Table}
+\subsection{Instruction Descriptions}
+
+\newpage
+\section{\mt Architecture}
+\subsection{Block Diagram}
+\subsection{Bus Architecture}
+\subsection{Machine Cycle}
+
+\newpage
+\section{Microcode}
+\subsection{Implementation}
+\subsection{Detailed Microstates}
+
+\newpage
+\section{VHDL Implementation}
+
+\newpage
+\section{Conclusion}
 
 \end{document}
