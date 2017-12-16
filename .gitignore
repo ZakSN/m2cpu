@@ -20,6 +20,8 @@
 *.aux
 *.dvi
 *.log
+*.toc
+*.out
 
 #ignore directories
 db/
