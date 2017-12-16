@@ -7,6 +7,16 @@
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
 \newcommand{\ma}{M2 architecture}
+\newcommand{\inum}{75}
+
+\newcommand{\Ar}{\texttt{A}}
+\newcommand{\Gr}{\texttt{G}}
+\newcommand{\Hr}{\texttt{H}}
+\newcommand{\Xr}{\texttt{X}}
+\newcommand{\Yr}{\texttt{Y}}
+\newcommand{\Sr}{\texttt{S}}
+\newcommand{\SP}{\texttt{SP}}
+\newcommand{\PC}{\texttt{PC}}
 
 \title{M2 Architecture And Implementation}
 \author{Zakary Nafziger}
@@ -19,13 +29,13 @@
 \newpage
 
 \tableofcontents
-\pagenumbering{gobble}
+\pagenumbering{roman}
 \newpage
 
 \pagenumbering{arabic}
 
 \section{Introduction}
-The \mt{} is a simple subscalar 8-bit processor that implements the 75 
+The \mt{} is a simple subscalar 8-bit processor that implements the \inum{} 
 instruction \mi{}. The \mt{} and \mi{} were designed and implemented by the author
 as a personal hobby project. The \ma{} is intended to be as simple as possible 
 while still being interesting. Some basic information: 
@@ -35,7 +45,7 @@ while still being interesting. Some basic information:
 \item 8-bit data and ALU buses
 \item 16-bit address bus; 64KB of addressable memory
 \item 256B zero-page stack
-\item 75 instructions
+\item \inum{} instructions
 \item implemented in VHDL on a MAX10 based development board
 \end{itemize}
 
@@ -48,7 +58,7 @@ video system are documented seperately.
 \subsection{Terminology}
 Throughout this document the terms \mt{}, \mi{}, and \ma{} will be used. \mt{} 
 refers to the VHDL processor that implements the \mi{}. The \mi{} is the set of
-75 instructions that make up the M2 assembly language. The \ma{} refers to the
+\inum{} instructions that make up the M2 assembly language. The \ma{} refers to the
 combination of a processor and instruction set that implement the M2 assembly 
 language. The \mt{} is therefore an implementation of the \ma{}, since it 
 supports the complete \mi{}. However since the \mt{}'s instructions are 
@@ -65,11 +75,107 @@ here:
 
 \newpage
 \section{Instruction Set}
+The \mt{} implements the \mi{}. The \mi{} is a custom instruction set designed for
+this project. The instruction set consists of \inum{} instructions that can be 
+broadly grouped into four categories: register mainpulation, memory access,
+arithmatic and logical, and program control.
+\par
+
+\subsection{Register Manipulation Instructions}
+The register manipulation instructions allow data to be loaded from one
+register to another. The Register manipulation instructions allow completely
+orthogonal movement of data between general purpose registers (GPRs), and 
+restricted data movement between special purpose registers (SPRs) and GPRs. No
+instructions are provided for data movement between two SPRs. Most of the
+\mt{}'s registers are 8-bits wide, however the addressing registers may be
+manipulated 16 bits at a time. Each GPR serves a multiple purposes. The primary
+purpose of the GPRs is to provide fast data storage for a program. The 
+secondary purpose(s) of each GPR is as the target or source of data for a given
+operation. Each SPR serves a single purpose. The Data held in an SPR is always
+interperated in a consistant manner. The following subsections provide a 
+detailed description of each register's function:
+\par
+
+\subsubsection{A Register}
+The \Ar{} register is an 8-bit GPR. The secondary function of the \Ar{} 
+register is as the destination of ALU operations. The result of an ALU 
+operation is always stored in the \Ar{} register. The designation '\Ar{}' is 
+meant to evoke 'accumulator'.
+\par
+
+\subsubsection{G Register}
+The \Gr{} register is an 8-bit GPR. The \Gr{} register's secondary function is to hold 
+the high byte of an address. Some memory instructions are implcitly addressed 
+and since the \mt{} supports a 64KB address space addresses are 16-bits wide.
+The low byte of an implicit address is stored in the \Hr{} register. Some 
+register manipulation instructions act on the \Gr{} register individually while others
+treat the combined \Gr{}\Hr{} register as a single 16-bit unit.
+\par
+
+\subsubsection{H Register}
+The \Hr{} register is an 8-bit GPR. The \Hr{} register's secondary function is as the 
+low byte of an implicit address as described in the previous section.
+\par
+
+\subsubsection{X Register}
+The \Xr{} register is an 8-bit GPR. The \Xr{} register serves two secondary
+purposes. The first is as an ALU operand, and the second is as the point of 
+access to the Stack Pointer. Since the Stack Pointer is an SPR it's contents
+can only be accessed through a GPR, the \Xr{} register is that GPR.
+\par
+
+\subsubsection{Y register}
+The \Yr{} register is an 8-bit GPR. The \Yr{} register also serves two 
+secondary purposes. The first is as the other ALU operand and the second is as
+a point of access to the Status register. In general the \Yr{} register serves
+a similar purpose as the \Xr{} register.
+\par
+
+\subsubsection{Status Register}
+The Status Register (\Sr{} register) is an 8-bit SPR. The low four bits of the
+\Sr{} register hold the processor's status flags. The status flags are 
+automatically manipulated by the ALU after every arithmatic or logical operation
+and may also be manipulated by some control instructions. The status flags are
+used by the control instructions to control program flow. The contents of the 
+\Sr{} register can be accessed through the \Yr{} register. The status flags are:
+\begin{itemize}
+\item Zero (\texttt{z}, bit 3). Set when the last ALU operation produced zero as
+a result
+\item Negative (\texttt{n}, bit 2). Set when the result of the last ALU 
+operations was negative (as interperated in two's complement)
+\item Carry (\texttt{c}, bit 1). Set when the result of the last ALU operation
+produced a '9th bit', i.e. unsigned addition of two numbers greater than 127.
+\item Overflow (\texttt{o}, bit 0). Set when the result of the last ALU 
+operation produced an impossible result (when interperated in two's complement)
+\end{itemize}
+Status flags are positive logic, i.e. set is '1' and clear is '0'.
+\par
+
+\subsubsection{Stack Pointer}
+The Stack Pointer (\SP{}) is an 8-bit SPR. The \SP{} holds the address of the 
+top of the stack. All stack addresses are mapped onto the zeroth page of memory
+and can therefore be represented with a single byte. The \SP{} starts at 
+address 0x0000 and is incremented after each push. This means that the stack 
+grows from low addresses to high addresses. The value of the \SP{} can be 
+accessed through the \Xr{} register.
+\par
+
+\subsubsection{Program Counter}
+The Program Counter (\PC{}) is a 16-bit SPR. The \PC{} holds the current memory
+address. The \PC{} is incremented after each machine cycle so that the next 
+instruction can be fetched. Some instructions may load the \PC{} with a value
+other than the next instruction. The \PC{} can be accessed through the combined
+\Gr{}\Hr{} register.
+\par
+
+\subsection{Memory Access Instructions}
+\subsection{Arithmatic and Logical Instructions}
+\subsection{Program Control Instructions}
 \subsection{Instruction Table}
 \subsection{Instruction Descriptions}
 
 \newpage
-\section{\mt Architecture}
+\section{\mt{} Architecture}
 \subsection{Block Diagram}
 \subsection{Bus Architecture}
 \subsection{Machine Cycle}
