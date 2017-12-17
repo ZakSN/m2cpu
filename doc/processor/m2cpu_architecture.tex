@@ -5,6 +5,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{listings}
 \usepackage{lmodern}
+\usepackage{pdflscape}
+\usepackage{graphicx}
 
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
@@ -32,6 +34,10 @@
 
 \tableofcontents
 \pagenumbering{roman}
+\newpage
+
+\listoftables
+\listoffigures
 \newpage
 
 \pagenumbering{arabic}
@@ -86,16 +92,16 @@ arithmetic and logical, and program control.
 \subsection{Register Manipulation Instructions}
 The register manipulation instructions allow data to be loaded from one
 register to another. The Register manipulation instructions allow completely
-orthogonal movement of data between general purpose registers (GPRs), and 
-restricted data movement between special purpose registers (SPRs) and GPRs. No
-instructions are provided for data movement between two SPRs. Most of the
-\mt{}'s registers are 8-bits wide, however the addressing registers may be
-manipulated 16 bits at a time. Each GPR serves a multiple purposes. The primary
-purpose of the GPRs is to provide fast data storage for a program. The 
-secondary purpose(s) of each GPR is as the target or source of data for a given
-operation. Each SPR serves a single purpose. The Data held in an SPR is always
-interpreted in a consistent manner. The following subsections provide a 
-detailed description of each register's function:
+orthogonal movement of data between general purpose registers (GPRs), 
+restricted data movement between special purpose registers (SPRs) and GPRs, 
+and no data movement between two SPRs. Most of the \mt{}'s registers are 8-bits
+wide, however the addressing registers may be manipulated 16 bits at a time. 
+Each GPR serves a multiple purposes. The primary purpose of the GPRs is to 
+provide fast data storage for a program. The secondary purpose(s) of each GPR is
+as the target or source of data for a given operation. Each SPR serves a single 
+purpose. The Data held in an SPR is always interpreted in a consistent manner. 
+The following subsections provide a detailed description of each register's 
+function:
 \par
 
 \subsubsection{A Register}
@@ -128,7 +134,7 @@ can only be accessed through a GPR, the \Xr{} register is that GPR.
 
 \subsubsection{Y register}
 The \Yr{} register is an 8-bit GPR. The \Yr{} register also serves two 
-secondary purposes. The first is as the other ALU operand and the second is as
+secondary purposes. The first is as the an ALU operand and the second is as
 a point of access to the Status register. In general the \Yr{} register serves
 a similar purpose as the \Xr{} register.
 \par
@@ -188,9 +194,9 @@ about twice as long as register manipulation instructions.
 \par
 
 \subsubsection{Literal to Register}
-Literal to register instructions move a single byte literal to a given GPR.
+Literal to register instructions load a single byte literal in to a given GPR.
 Literal to register instructions are similar to direct access instructions,
-except that no address is required. The byte to be moved is stored in the
+except that no address is required. The byte to be loaded is stored in the
 address immediately following the address storing the instruction code. This
 means that these instructions take two addresses when assembled.
 \par
@@ -234,10 +240,9 @@ microstates is found in sections 3.3 and 4 respectively.
 \subsubsection{Unconditional Jump}
 An unconditional jump sets the address of the next instruction to be executed
 as the address held in the \Gr{}\Hr{} register. Since the \PC{} is incremented
-at the end of every machine cycle (section 3.3) the jump instruction must 
-decrement the \PC{} after setting it to the value of the \Gr{}\Hr{} register 
-so that the next instruction executed is the one held at the address 
-\Gr{}\Hr{}.
+at the end of every machine cycle  the jump instruction must decrement the \PC{}
+after setting it to the value of the \Gr{}\Hr{} register so that the next 
+instruction executed is the one held at the address \Gr{}\Hr{}.
 \par
 
 \subsubsection{Conditional Branch}
@@ -258,7 +263,6 @@ Some useful assembly language idioms are the 'escape jump' and 'if-else'. Since
 two branches may only differ by one instruction it is often useful to make that 
 one instruction an unconditional jump. For example:
 \lstset{
-	escapeinside={*(}{)*},
 	basicstyle=\small\ttfamily
 }
 \begin{lstlisting}
@@ -293,23 +297,123 @@ An 'if-else' statement can be implemented as follows:
 \par
 
 \subsubsection{Status Flag Manipulation}
-
-\subsection{Instruction Table}
-\subsection{Instruction Descriptions}
+Status flag manipulation instructions allow the programmer to set the value of
+any of the four status flags. There are 8 status flag manipulation instructions
+since each flag can be set ('1') or cleared ('0'). The status flag manipulation
+instructions are the only way to move data into the \Sr{} register. The 
+contents of the \Sr{} register may be dumped into the \Yr{} register. This 
+allows status flags to be stored, or inspected by the program.
+\par
 
 \newpage
 \section{\mt{} Architecture}
+This section outlines the modular architecture of the \mt{}. The implementation
+of this architecture is described in section 5. The \mt{} is designed (and 
+implemented) as a series of modules that communicate over three major busses. 
+The way that these modules interact with each other to carry out instructions is
+described in the next section (section 4). In general This section describes the 
+processor's 'hardware', whereas section 4 describes how this hardware can be 
+made to implement an instruction set.
+\par
+
 \subsection{Block Diagram}
-\subsection{Bus Architecture}
-\subsection{Machine Cycle}
+The architecture of the \mt{} is well described by a block diagram. Figure 1
+shows all of the major components of the processor and is organized very 
+similarly to the actual VHDL implementation of the \mt{} (section 5).
+\par
 
 \newpage
-\section{Microcode}
-\subsection{Implementation}
-\subsection{Detailed Microstates}
+\thispagestyle{empty}
+\begin{landscape}
+	\begin{figure}
+	\makebox[\linewidth]{
+		\includegraphics[
+			width=18cm,
+			height=18cm,
+			keepaspectratio
+		]{M2CPU_architecture_diagram.png}
+	}
+	\caption{Simplified \mt{} Block Diagram}
+	\end{figure}
+\end{landscape}
+
+\newpage
+\subsection{Bus Architecture}
+
+\newpage
+\section{Control Logic}
+\subsection{Machine Cycle}
+\subsection{Microcode}
 
 \newpage
 \section{VHDL Implementation}
+
+\newpage
+
+\section{Detailed Instruction Descriptions}
+This section provides a detailed description of each instruction in the \mi{}.
+Some instructions are very similar, as such they have been grouped for 
+convenience. A discription of each instruction's microstates is also included.
+This section is included primarily as technical reference. High level 
+descriptions of the instruction set and the microcode implementation are provided
+in sections 2 and 4 respectively. Table 1 (section 6.14) provides a handy 
+programming reference.
+\par
+\subsection{Load GPR}
+\subsection{Load SPR}
+\subsection{Load Memory From GPR}
+\subsection{Load GPR From Memory}
+\subsection{Load GPR With Literal}
+\subsection{Push GPR}
+\subsection{Pop GPR}
+\subsection{ALU Operations}
+\subsection{Set Status Flag}
+\subsection{Clear Status Flag}
+\subsection{Conditional Branch}
+\subsection{No-operation}
+\subsection{Jump}
+\subsection{Instruction Table}
+Table 1 shows each instruction and its corresponding hexadecimal code. Each
+instruction is a single byte long, some instructions take a single byte-literal 
+argument represented with a '\texttt{\#}'. The hexadecimal code (microaddress) 
+for a a given instruction is found by adding the high nybble (row) and low 
+nybble (column). Detailed descriptions each instruction are provided in 
+sections 6.1 to 6.13.
+\par
+
+\newpage
+\thispagestyle{empty}
+\begin{landscape}
+\begin{table}
+	\makebox[\linewidth]{
+		\texttt{
+		\begin{tabular}{ c c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+			\cline{3-18}
+			&&\multicolumn{16}{|c|}{LOW NYBBLE} \\ 
+			\cline{3-18}
+			&&0x00&0x01&0x02&0x03&0x04&0x05&0x06&0x07&0x08&0x09&0x0A&0x0B&0x0C&0x0D&0x0E&0x0F \\ \hline
+			\multicolumn{1}{|c|}{}&0x00&NOP&LDA G&&LDA H&&LDA X&&LDA Y&&LDSP X&&&ADD&&BZS& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{}&0x10&&LDG A&&LDG H&&LDG X&&LDG Y&&LDX SP&&&SUB&&BZC& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{H}&0x20&&LDH A&&LDH G&&LDH X&&LDH Y&&LDY S&&&AND&&BNS& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{I}&0x30&&LDX A&&LDX G&&LDX H&&LDX Y&&LDGH PC&&&NND&&BNC& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{G}&0x40&&LDY A&&LDY G&&LDY H&&LDY X&&JMP&&&ORR&&BCS& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{H}&0x50&&&&&&&&&&&&&XOR&&BCC& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{}&0x60&LDM A&&&LDA M&&&&LDA \#&&&&&STL&&BOS& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{N}&0x70&LDM G&&&LDG M&&&&LDG \#&&&&&STR&&BOC& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{Y}&0x80&LDM H&&&LDH M&&&&LDH \#&&&&&&&SZF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{B}&0x90&LDM X&&&LDX M&&&&LDX \#&&&&&&&CZF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{B}&0xA0&LDM Y&&&LDY M&&&&LDY \#&&&&&&&SNF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{L}&0xB0&PHA&&&&&PPA&&&&&&&&&CNF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{E}&0xC0&PHG&&&&&PPG&&&&&&&&&SCF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{}&0xD0&PHH&&&&&PPH&&&&&&&&&CCF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{}&0xE0&PHX&&&&&PPX&&&&&&&&&SOF& \\ \cline{2-18}
+			\multicolumn{1}{|c|}{}&0xF0&PHY&&&&&PPY&&&&&&&&&COF& \\ \hline
+		\end{tabular}
+		}
+	}
+	\caption{The M2 Instruction Set}
+\end{table}
+\end{landscape}
 
 \newpage
 \section{Conclusion}

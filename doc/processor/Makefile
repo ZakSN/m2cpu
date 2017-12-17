@@ -10,7 +10,7 @@ DOCUMENT=m2cpu_architecture
 all: spelling $(DOCUMENT).pdf view
 
 $(DOCUMENT).pdf: $(DOCUMENT).tex
-	$(TEX) $(DOCUMENT).tex
+	$(PDF) $(DOCUMENT).tex
 	$(PDF) $(DOCUMENT).tex
 
 spelling:
