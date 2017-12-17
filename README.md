@@ -4,8 +4,8 @@ A very simple 8 bit computer written in VHDL. Major Project Features:
 
 - custom 8 bit processor and memory
 	- 75 instructions implemented in microcode 
-	- 16 bit address space
-	- full 64K address space
+	- 16 bit address space (64KB memory)
+	- 256B zero-page stack
 - assembler written in C++
 	- translates *.asm (ascii) files to *.hex files that can be flashed to the 	MAX10's internal memory
 	- used to assemble all demonstration software

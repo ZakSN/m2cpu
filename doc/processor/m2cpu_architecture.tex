@@ -3,6 +3,8 @@
 \PassOptionsToPackage{hyphens}{url}\usepackage{hyperref}
 \usepackage[parfill]{parskip}
 \usepackage[utf8]{inputenc}
+\usepackage{listings}
+\usepackage{lmodern}
 
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
@@ -52,7 +54,7 @@ while still being interesting. Some basic information:
 This document describes the \mt{}. The \mt{} is only one part of a larger 
 project, the M2 computer. As of this writing the other major components of the
 M2 computer project are an assembler and VGA video system. The assembler and 
-video system are documented seperately. 
+video system are documented separately. 
 \par
 
 \subsection{Terminology}
@@ -77,8 +79,8 @@ here:
 \section{Instruction Set}
 The \mt{} implements the \mi{}. The \mi{} is a custom instruction set designed for
 this project. The instruction set consists of \inum{} instructions that can be 
-broadly grouped into four categories: register mainpulation, memory access,
-arithmatic and logical, and program control.
+broadly grouped into four categories: register manipulation, memory access,
+arithmetic and logical, and program control.
 \par
 
 \subsection{Register Manipulation Instructions}
@@ -92,7 +94,7 @@ manipulated 16 bits at a time. Each GPR serves a multiple purposes. The primary
 purpose of the GPRs is to provide fast data storage for a program. The 
 secondary purpose(s) of each GPR is as the target or source of data for a given
 operation. Each SPR serves a single purpose. The Data held in an SPR is always
-interperated in a consistant manner. The following subsections provide a 
+interpreted in a consistent manner. The following subsections provide a 
 detailed description of each register's function:
 \par
 
@@ -105,7 +107,7 @@ meant to evoke 'accumulator'.
 
 \subsubsection{G Register}
 The \Gr{} register is an 8-bit GPR. The \Gr{} register's secondary function is to hold 
-the high byte of an address. Some memory instructions are implcitly addressed 
+the high byte of an address. Some memory instructions are implicitly addressed 
 and since the \mt{} supports a 64KB address space addresses are 16-bits wide.
 The low byte of an implicit address is stored in the \Hr{} register. Some 
 register manipulation instructions act on the \Gr{} register individually while others
@@ -134,7 +136,7 @@ a similar purpose as the \Xr{} register.
 \subsubsection{Status Register}
 The Status Register (\Sr{} register) is an 8-bit SPR. The low four bits of the
 \Sr{} register hold the processor's status flags. The status flags are 
-automatically manipulated by the ALU after every arithmatic or logical operation
+automatically manipulated by the ALU after every arithmetic or logical operation
 and may also be manipulated by some control instructions. The status flags are
 used by the control instructions to control program flow. The contents of the 
 \Sr{} register can be accessed through the \Yr{} register. The status flags are:
@@ -142,11 +144,11 @@ used by the control instructions to control program flow. The contents of the
 \item Zero (\texttt{z}, bit 3). Set when the last ALU operation produced zero as
 a result
 \item Negative (\texttt{n}, bit 2). Set when the result of the last ALU 
-operations was negative (as interperated in two's complement)
+operations was negative (as interpreted in two's complement)
 \item Carry (\texttt{c}, bit 1). Set when the result of the last ALU operation
 produced a '9th bit', i.e. unsigned addition of two numbers greater than 127.
 \item Overflow (\texttt{o}, bit 0). Set when the result of the last ALU 
-operation produced an impossible result (when interperated in two's complement)
+operation produced an impossible result (when interpreted in two's complement)
 \end{itemize}
 Status flags are positive logic, i.e. set is '1' and clear is '0'.
 \par
@@ -155,8 +157,8 @@ Status flags are positive logic, i.e. set is '1' and clear is '0'.
 The Stack Pointer (\SP{}) is an 8-bit SPR. The \SP{} holds the address of the 
 top of the stack. All stack addresses are mapped onto the zeroth page of memory
 and can therefore be represented with a single byte. The \SP{} starts at 
-address 0x0000 and is incremented after each push. This means that the stack 
-grows from low addresses to high addresses. The value of the \SP{} can be 
+address \texttt{0x0000} and is incremented after each push. This means that the 
+stack grows from low addresses to high addresses. The value of the \SP{} can be 
 accessed through the \Xr{} register.
 \par
 
@@ -168,9 +170,130 @@ other than the next instruction. The \PC{} can be accessed through the combined
 \Gr{}\Hr{} register.
 \par
 
-\subsection{Memory Access Instructions}
-\subsection{Arithmatic and Logical Instructions}
+\subsection{Memory Manipulation Instructions}
+Memory manipulation instructions are instructions that move data from memory to a 
+register or from a register to memory. No other category of instruction 
+manipulates values in memory. There are three types of memory manipulation 
+instruction: direct access, literal to register, and stack operations.
+\par
+
+\subsubsection{Direct Access}
+Direct Access instructions move a single byte from memory to a given GPR or 
+from a given GPR to memory. The address of the byte to manipulate is held in 
+the combined \Gr{}\Hr{} register. From a machine language perspective direct 
+access instructions look like register manipulation instructions with the added
+caveat that the value of the '\texttt{M}' register is dependant on the address
+held in the \Gr{}\Hr{} register. In general direct access instructions take 
+about twice as long as register manipulation instructions.
+\par
+
+\subsubsection{Literal to Register}
+Literal to register instructions move a single byte literal to a given GPR.
+Literal to register instructions are similar to direct access instructions,
+except that no address is required. The byte to be moved is stored in the
+address immediately following the address storing the instruction code. This
+means that these instructions take two addresses when assembled.
+\par
+
+\subsubsection{Stack Operations}
+Stack operations place a byte on the stack (push) or remove a byte from the
+stack (pop) and adjust the \SP{} as necessary. Bytes are pushed from or popped
+to GPRs. The stack is stored in the first page of memory; addresses 
+\texttt{0x0000} to \texttt{0x00FF}. The \SP{} wraps without warning at the edges
+of the stack. This means that stack safety is the sole responsibility of the 
+programmer. The \mt{} will happily increment the \SP{} from \texttt{0xFF} to
+\texttt{0x00} if a byte is pushed to an already full stack without any type of
+warning. This unsafe behaviour was implemented to keep stack instruction 
+complexity to a minimum. As it stands stack operations are the most complex and
+slow instructions in the \mi{}.
+\par
+
+\subsection{Arithmetic and Logical Instructions}
+Arithmetic and logical instructions preform an artithmetic or logical function
+on the \Xr{} and \Yr{} registers, store the result in the \Ar{} register and 
+update the flags in the \Sr{} register. The \mt{}'s ALU can calculate 8 
+different functions (detailed in section 2.6). Six of these functions require
+two inputs (\Xr{} and \Yr{}), and two functions require only one input, (\Xr{}).
+\par
+
 \subsection{Program Control Instructions}
+Program control instrcutions control the flow of the program. There are four
+types of program control instructions: no-operation, unconditional jump,
+conditional branch, and status flag manipulation.
+\par
+
+As the name suggests the no-operation does nothing. The no-operation is not 
+quite a program control instruction, it is more accurately 'the lack of an 
+instruction'. The behaviour of the no-operation is well defined so that if a 
+program attempts to execute unitialized memory the processor will behave in a 
+predictable (and safe) manner. A no-operation takes an entire machine cycle and
+one microstate to execute. More information about machine cycles and 
+microstates is found in sections 3.3 and 4 respectively.
+\par
+
+\subsubsection{Unconditional Jump}
+An unconditional jump sets the address of the next instruction to be executed
+as the address held in the \Gr{}\Hr{} register. Since the \PC{} is incremented
+at the end of every machine cycle (section 3.3) the jump instruction must 
+decrement the \PC{} after setting it to the value of the \Gr{}\Hr{} register 
+so that the next instruction executed is the one held at the address 
+\Gr{}\Hr{}.
+\par
+
+\subsubsection{Conditional Branch}
+Conditional branch instructions change which instruction is executed next based 
+on the value of a status flag. In general conditional branch instructions allow
+the next instruction to be executed if some condition is not met. If the 
+condition is met the next instruction is skipped and the instruction following 
+it is executed next. This means that the two branches differ by exactly one 
+instruction. The condition evaluated is the state of one of the status flags
+(section 2.1.6). Since there are four status flags, and each can have two 
+values (set or clear) there are eight conditional branch instructions, i.e.
+branch if flag set, and branch if flag clear. This branching mechanism is
+somewhat austere, however it serves to reduce the overall complexity of the
+\mt{}.
+\par
+
+Some useful assembly language idioms are the 'escape jump' and 'if-else'. Since
+two branches may only differ by one instruction it is often useful to make that 
+one instruction an unconditional jump. For example:
+\lstset{
+	escapeinside={*(}{)*},
+	basicstyle=\small\ttfamily
+}
+\begin{lstlisting}
+	LDG 0x0A # load the high byte of 
+	         # the escape address 0x0AA0
+	LDH 0xA0 # load the low byte of 0x0AA0
+	BZC # branch if zero is clear
+	JMP # executed if zero is set
+	LDX A # executed if zero is clear
+	.
+	.
+	.
+	# address 0x0AA0
+	LDY A # this code only runs if the 
+	      # zero flag was set before the branch.
+\end{lstlisting}
+An 'if-else' statement can be implemented as follows:
+\begin{lstlisting}
+	LDX 0x10 # put some data in the X 
+	         # and Y registers
+	LDY 0x01
+	BZS
+	LDM X # this instruction is executed
+	      # if the zero flag is clear
+	BZC
+	LDM Y # this instruction is executed
+	      # if  the zero flag is set
+	... 
+	# memory is loaded with X if zero is
+	# clear, else memory is loaded with Y
+\end{lstlisting}
+\par
+
+\subsubsection{Status Flag Manipulation}
+
 \subsection{Instruction Table}
 \subsection{Instruction Descriptions}
 
