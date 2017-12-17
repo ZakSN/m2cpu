@@ -22,6 +22,8 @@
 *.log
 *.toc
 *.out
+*.lof
+*.lot
 
 #ignore directories
 db/
