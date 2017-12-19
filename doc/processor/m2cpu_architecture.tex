@@ -12,6 +12,7 @@
 \newcommand{\mi}{M2 instruction set}
 \newcommand{\ma}{M2 architecture}
 \newcommand{\inum}{75}
+\newcommand{\ibusnum}{42}
 
 \newcommand{\Ar}{\texttt{A}}
 \newcommand{\Gr}{\texttt{G}}
@@ -312,14 +313,69 @@ of this architecture is described in section 5. The \mt{} is designed (and
 implemented) as a series of modules that communicate over three major busses. 
 The way that these modules interact with each other to carry out instructions is
 described in the next section (section 4). In general This section describes the 
-processor's 'hardware', whereas section 4 describes how this hardware can be 
+processor's 'hardware', whereas section 4 describes how this 'hardware' can be 
 made to implement an instruction set.
 \par
 
 \subsection{Block Diagram}
 The architecture of the \mt{} is well described by a block diagram. Figure 1
 shows all of the major components of the processor and is organized very 
-similarly to the actual VHDL implementation of the \mt{} (section 5).
+similarly to the actual VHDL implementation of the \mt{} (section 5). The 
+dotted line in figure 1 denotes the boundary of the processor and serves to 
+show the seperation between the processor and memory. The dashed arrows denote
+single bit control buses (section 4), the light weight arrows denote 8-bit data
+and instruction buses, and the medium weight arrows denote 16-bit address buses. 
+The heavy weight line denotes the control bus. The bus architecture is 
+discussed in further detail in the next section (3.2).
+\par
+
+The \mt{}'s internal structure can be loosely divided into two halves; the
+processing logic and the control logic. Roughly speaking processing logic is on
+the left half of figure 1 and control logic is on the right half. In general 
+programs manipulate information with the processing logic. As such the 
+functionality of the processing logic is exposed to the programmer through the
+instruction set (section 2). The control logic is responsible for actually 
+running a program. The primary functions of the control logic are to fetch and 
+decode instructions in sequence. Since the operation of the control logic is 
+largely invisible to the programmer it is described in detail in section 4.
+\par
+
+In an effort to preserve the legability of figure 1 a number of abbreviations
+have been used to label the processor's functional blocks. These abbreviations
+are described below:
+\begin{itemize}
+	\item Processing Logic:
+	\begin{itemize}
+		\item \Ar{}: The \Ar{} register.
+		\item \Gr{}, and \Hr{}: The \Gr{} register and \Hr{} register. 
+		Note that these registers are grouped. This is reflective of how
+		some instructions treat the \Gr{} and \Hr{} registers as a 
+		single 16-bit \Gr{}\Hr{} register.
+		\item \Xr{}: The \Xr{} register.
+		\item \Yr{}: The \Yr{} register.
+		\item \Sr{}: The status register.
+		\item \SP{}: The stack pointer.
+		\item \PC{}: The program counter. Note that the program counter
+		is twice as wide a the other registers. This is reflective of 
+		the fact that the program counter holds a 16-bit address instead
+		of a single byte.
+		\item \texttt{ALU}: The arithmetic and logic unit.
+	\end{itemize}
+	\item Control Logic:
+	\begin{itemize}
+		\item \texttt{ABM}: Address bus multiplexer
+		\item \texttt{DBM}: Data bus multiplexer
+		\item \texttt{IR}: Instruction register
+		\item \texttt{FSM}: Finite state machine
+		\item \texttt{CBEN}: Control bus enable
+		\item \texttt{MICROCODE}: The microcode look up table
+		\item \texttt{DECODE}: Branch decoding logic
+	\end{itemize}
+	\item \texttt{RST} and \texttt{CLK}: The processor's reset and clock 
+	lines respectively.
+\end{itemize}
+A detailed description of each functional block and how it maps to actual VHDL 
+is given in section 5.
 \par
 
 \newpage
@@ -339,6 +395,18 @@ similarly to the actual VHDL implementation of the \mt{} (section 5).
 
 \newpage
 \subsection{Bus Architecture}
+The \mt{} is designed around 3 major buses; the 8-bit data bus, the 16-bit 
+address bus and the \ibusnum{}-bit control bus. The data bus is used to move 
+data around the processor. Bytes on the data bus are never interpreted as 
+instructions, however instructions can be placed on the data bus if the 
+programmer desires. The address bus is used to move addresses around the 
+processor. The processor's 8-bit data buses are strictly seperated from the 
+16-bit address buses. The only points of access between the 16-bit bus and the 
+8-bit bus are the stack pointer and the combined \Gr{}\Hr{} register. The 
+control bus is the collection of control signals coming from the processing 
+logic. The control bus is made up of load, increment, and select lines. The 
+implementation of the \mt{}'s bus architecture is described in section 5.
+\par
 
 \newpage
 \section{Control Logic}
@@ -347,6 +415,19 @@ similarly to the actual VHDL implementation of the \mt{} (section 5).
 
 \newpage
 \section{VHDL Implementation}
+make a section for each file and describe what it is on fig 1
+\subsection{Bus Architecture Implementation}
+Buses are often represented as strictly passive, i.e. wires. This presents a 
+problem when multiple logical outputs are attached to a single bus: suppose one
+device whishes to assert a value on the bus, what value should the other 
+devices on the bus assert? In discrete logic this problem is often resolved with
+tri-state logic. While tri-state logic can be modeled in VHDL it is awkward to 
+do so. As such The \mt{}'s implementation avoids this issue by implementing 
+buses as multiplexers. For example; all devices that can assert data to the data
+bus are attached to the inputs of a data bus multiplexer (DBM). The output of 
+the DBM is then attached to the input of every device that reads from the data 
+bus.
+\par
 
 \newpage
 
