@@ -7,6 +7,7 @@
 \usepackage{lmodern}
 \usepackage{pdflscape}
 \usepackage{graphicx}
+\usepackage{wrapfig}
 
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
@@ -410,9 +411,50 @@ implementation of the \mt{}'s bus architecture is described in section 5.
 
 \newpage
 \section{Control Logic}
+The control logic is responsible for manipulating the processing logic in such
+a way that an instruction is carried out. For any given instruction a variety
+of low level operations must be carried out. The instruction must be fetched
+from a memory address, it must be decoded, control signals must be applied to
+the control bus for specific lenghts of time, and finally the address of the
+next instruction must be calculated. This general sequence of operations is the
+machine cycle. The specifics of the \mt{}'s machine cycle are discussed in the 
+next section (4.1).
+\par
+
+For each instruction some stages of the machine cycle are the same. All 
+instructions must be fetched and decoded, and the address of the next 
+instruction must be determined before the next machine cycle can begin. However
+every instrcution does a different thing. In the \mt{} the stages of the 
+machine cycle that differ for each instruction are written in microcode. This
+means that some portion of each machine cycle is spent executing instruction
+specific microcode rather than instruction agnostic machine states.
+\par
+
+Some instructions take more time to execute than others. This means that the 
+machine cycle for one instruction may have a different number of microcode 
+steps than the machine cycle for another. The \mt{} allows an arbitrary number
+of microcode steps to be executed for each instruction. This is one of the few
+optimizations made in the \ma{}. This optimization was deemed necessary since
+some instructions in the \mi{} differ in execution time by 300\%. If this
+optimization was not made and the \mt{} had a fixed length machine cycle the
+fastest (and most used) instructions would leave the processor idle for around
+two thirds of its execution time.
+\par
+
 \subsection{Machine Cycle}
+
+\begin{wrapfigure}{R}{0.5\textwidth}
+\includegraphics[
+	width=13cm,
+	height=13cm,
+	keepaspectratio
+]{M2CPU_FSM.png}
+\caption{\mt{} Finite State Machine State Diagram}
+\end{wrapfigure}
+
 \subsection{Microcode}
 
+\clearpage
 \newpage
 \section{VHDL Implementation}
 make a section for each file and describe what it is on fig 1
@@ -430,7 +472,6 @@ bus.
 \par
 
 \newpage
-
 \section{Detailed Instruction Descriptions}
 This section provides a detailed description of each instruction in the \mi{}.
 Some instructions are very similar, as such they have been grouped for 
