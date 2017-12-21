@@ -23,6 +23,14 @@
 \newcommand{\Sr}{\texttt{S}}
 \newcommand{\SP}{\texttt{SP}}
 \newcommand{\PC}{\texttt{PC}}
+\newcommand{\IR}{\texttt{IR}}
+
+\newcommand{\Se}{\texttt{SETUP}}
+\newcommand{\Fo}{\texttt{FETCH\_1}}
+\newcommand{\Ft}{\texttt{FETCH\_2}}
+\newcommand{\Lo}{\texttt{LOAD\_IR}}
+\newcommand{\Ex}{\texttt{EXEC}}
+\newcommand{\In}{\texttt{INCPC}}
 
 \title{M2 Architecture And Implementation}
 \author{Zakary Nafziger}
@@ -442,6 +450,13 @@ two thirds of its execution time.
 \par
 
 \subsection{Machine Cycle}
+The machine cycle is the series of steps that are carried out to execute an
+instruction. In the \mt{} the machine cycle is controlled by a finite state 
+machine (FSM). A state diagram for the \mt{}'s FSM is shown in figure 2. The
+FSM has six states. Transitions between states occur on the rising edge of the
+system clock. To accomodate a variable number of microcode steps the \mt{} may
+remain in the \Ex{} state for an arbitrary number of clock cycles. 
+\par
 
 \begin{wrapfigure}{R}{0.5\textwidth}
 \includegraphics[
@@ -452,9 +467,91 @@ two thirds of its execution time.
 \caption{\mt{} Finite State Machine State Diagram}
 \end{wrapfigure}
 
-\subsection{Microcode}
+The processor resets to the \Se{} state, as such \Se{} is the first state in 
+the machine cycle. In the \Se{} state the value held in the program counter is
+placed on the address bus (via the ABM, section 3.2). Additionally the control
+bus is set to zero (via the CBEN). This state ensures that the address of the
+next instruction to execute is placed on the address bus and is not changing by
+the time memory access starts. This state sets up the address so that memory
+access can begin.
+\par
 
-\clearpage
+The second and third states in the machine cycle (\Fo{} and \Ft{}) allow time 
+for the next instruction to be retrieved from memory. Memory requires two clock
+cycles to access, one to latch the address in and one to latch data out. Since
+the program counter's value cannot be gauranteed until the end of \Se{}, two
+additional states are required to ensure that memory is accessed properly. The
+current memory value is an input to the DBM (section 3.1 \& 3.2) and the input
+to the instruction register (\IR{}). During the \Ft{} state the load line on
+the \IR{} is asserted.
+\par
+
+The fourth state \Lo{}, loads the \IR{}. During the \Lo{} state the control bus
+is disabled and the program counter is applied to the address bus. This ensures
+that the FSM is still in control of the processor. At this point in the machine
+cycle the processor has loaded a new instruction and is ready to begin 
+executing it. 
+\par
+
+On the next clock edge the control bus is enabled, thereby passing control to
+the microcode. This is the \Ex{} state. Each 'microinstruction' that is 
+executed represents an instruction specific 'microstate' that the processor
+enters while remaining in the \Ex{} 'macrostate'. Each microinstruction that is
+followed by another microinstruction must signal the FSM to ensure that it 
+remains in the \Ex{} 'macrostate'. The last microintruction in an instruction 
+does not signal the FSM, thereby allowing it to continue to the final state in
+the machine cycle.
+\par
+
+The sixth and final state in the \mt{}'s mchine cycle is \In{} state. In the 
+\In{} state the control bus is set to 0, passing control back to the FSM, and 
+the program counter is incremented. The processor is now ready to begin 
+fetching the next instruction in the program.
+\par
+
+\subsection{Microcode}
+The \mt{}'s microcode provides a means to translate an instruction into a 
+control bus state. The \mt{}' microcode is stored in a look up table. The
+instrcution held in the \IR{} acts as an address and is fed into the look up
+table. The output of the look up table is applied to the control bus enable
+multiplexer (CBEN in figure 1). When in the \Ex{} state the CBEN is set to
+apply the microcode to the control bus. Every microinstruction that is followed
+by another microinstruction must signal the FSM to remain in the \Ex{} state.
+This means that the last microinstruction in a 'microprogram' 
+(macroinstruction) must not signal the FSM, thereby allowing the machine cycle
+to continue. Additionally each microinstrution must load the next 
+microinstruction in the 'microprogram'.
+\par
+
+The contents of the \IR{} act as a 'microaddress' for the 'microprogram' that
+implements an instruction. As such the \IR{}'s value must be changed in order
+to address a new microinstruction. It makes sense to store microinstructions
+in sequential microaddresses as this allows the next microinstruction in a
+microprogram to be indexed simply by incrementing the value of the \IR{}. This
+is exactly how the \mt{} works. The \IR{} includes logic to allow it to be 
+incremented and thereby index the next microinstruction. Since the condition
+for signaling the FSM to stay in the \Ex{} state and the condition for
+incrementing the \IR{} are the same a single bit of the control bus can be used
+to do both.
+\par
+
+A downside of incrementing the \IR{} to index a new microinstruction is that 
+some instruction codes cannot be used. If a given instruction \textit{C} 
+requires three microstates to complete then the \IR{} must be incremented twice
+after being loaded with the code representing \textit{C}. This means that the
+values \textit{C}, \textit{C} + 1, and \textit{C} + 2, are all addresses in the
+same microprogram. Therefore no other instruction may be represented with the
+codes \textit{C} + 1 or \textit{C} + 2. When an macroinstruction is said to be
+represented by a given opcode \textit{C} what is really meant is that the 
+opcode \textit{C} is the first microaddress in the microprogram that implements
+that macroinstruction. Table 1 shows which opcode each instruction in the \mi{}
+maps to. The shaded cells in table 1 are microaddresses which are only steps
+in microprograms. The labeled cells are the first addresses in their respective
+microprograms, i.e. 'the opcode' for that instruction.
+\par
+
+%TODO shade cells. add section on decoder
+
 \newpage
 \section{VHDL Implementation}
 make a section for each file and describe what it is on fig 1
