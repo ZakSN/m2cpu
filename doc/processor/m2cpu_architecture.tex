@@ -389,6 +389,7 @@ A detailed description of each functional block and how it maps to actual VHDL
 is given in section 5.
 \par
 
+%TODO: add GH - 1 to ABM diagram
 \newpage
 \thispagestyle{empty}
 \begin{landscape}
@@ -505,7 +506,7 @@ does not signal the FSM, thereby allowing it to continue to the final state in
 the machine cycle.
 \par
 
-The sixth and final state in the \mt{}'s mchine cycle is \In{} state. In the 
+The sixth and final state in the \mt{}'s machine cycle is \In{} state. In the 
 \In{} state the control bus is set to 0, passing control back to the FSM, and 
 the program counter is incremented. The processor is now ready to begin 
 fetching the next instruction in the program.
@@ -552,11 +553,11 @@ in microprograms. The labeled cells are the first addresses in their respective
 microprograms, i.e. 'the opcode' for that instruction.
 \par
 
-%TODO shade cells. add section on decoder
-
 \newpage
 \section{VHDL Implementation}
 make a section for each file and describe what it is on fig 1
+%TODO: branch decoder
+%TODO: gh - 1 on ABM
 \subsection{Bus Architecture Implementation}
 Buses are often represented as strictly passive, i.e. wires. This presents a 
 problem when multiple logical outputs are attached to a single bus: suppose one
@@ -580,26 +581,288 @@ descriptions of the instruction set and the microcode implementation are provide
 in sections 2 and 4 respectively. Table 1 (section 6.14) provides a handy 
 programming reference.
 \par
+
 \subsection{Load GPR}
+\begin{itemize}
+\item Mnemonics:
+\begin{itemize}
+	\item LDA G, LDA H, LDA X LDA Y
+	\item LDG A, LDG H, LDG X LDG Y
+	\item LDH A, LDH G, LDH X LDH Y
+	\item LDX A, LDX G, LDX H LDX Y
+	\item LDY A, LDY G, LDY H LDY X
+\end{itemize}
+\item Description: Loads 'q' with the value of 'r', where 'q' and 'r' are general purpose registers. Mnemonic schema: LDq r.
+\item States:
+\begin{itemize}
+	\item state 1: select 'r' on the data bus mux. assert la on 'q'
+	\item state 2: unassert la on 'q'
+\end{itemize}
+\end{itemize}
+
 \subsection{Load SPR}
+\begin{itemize}
+\item Mnemonic and Code:
+\begin{itemize}
+	\item LDGH PC
+\end{itemize}
+\item Description: Loads 'q' with the value of 'r', where 'q' and 'r' are 16 bit registers. Mnemonic schema: LDq r.
+\item States:
+\begin{itemize}
+	\item state 1: select 'r' on the address bus mux. assert load lines (lb on G and H) on 'q'.
+	\item state 2: unassert load lines on 'q'
+\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item LDSP X
+	\item LDX SP
+\end{itemize}
+\item Description: Load x with the stack pointer or load the stack pointer with x.
+\item States: 
+\begin{itemize}
+	\item state 1: assert lb on X for LDX SP, or assert ld on SP for LDSP X.
+\end{itemize}
+\end{itemize}
+
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item LDY S
+\end{itemize}
+\item Description: Load the Y register with the value of the status register.
+\item States:
+\begin{itemize}
+	\item state 1: assert lb on Y.
+\end{itemize}
+\end{itemize}
+
 \subsection{Load Memory From GPR}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item LDM A
+	\item LDM G
+	\item LDM H
+	\item LDM X
+	\item LDM Y
+\end{itemize}
+\item Description: Load the memory at the address held in GH with the value of 'q' where 'q' is one of the general purpose registers.
+\item States:
+\begin{itemize}
+	\item state 1: select GH on the address bus mux. select 'q' on the data bus mux.
+	\item state 2: assert wren
+	\item state 3: unassert wren
+\end{itemize}
+\end{itemize}
+
 \subsection{Load GPR From Memory}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item LDA M
+	\item LDG M
+	\item LDH M
+	\item LDX M
+	\item LDY M
+\end{itemize}
+\item Description: Load 'q' with the value of held in memory at the address GH.
+\item States:
+\begin{itemize}
+	\item state 1: select GH on the address bus mux. select M on the data bus mux.
+	\item state 2: same as state 1 (memory access)
+	\item state 3: assert la on 'q'
+	\item state 4: unassert la
+\end{itemize}
+\end{itemize}
+
 \subsection{Load GPR With Literal}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item LDA \#
+	\item LDG \#
+	\item LDH \#
+	\item LDX \#
+	\item LDY \#
+\end{itemize}
+\item Description: Load 'q' with the constant \#. \# is stored in the address directly following the instruction. this instruction TAKES TWO ADDRESSES.
+\item States:
+\begin{itemize}
+	\item state 1: select PC on the address bus mux. select M on the data bus mux. assert incpc
+	\item state 2: unassert incpc. maintain mux selections (memory access 1)
+	\item state 3: maintain mux selections (memory access 2)
+	\item state 4: assert la on 'q'
+	\item state 5: unassert la on 'q'
+\end{itemize}
+\end{itemize}
+
 \subsection{Push GPR}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item PHA
+	\item PHG
+	\item PHH
+	\item PHX
+	\item PHY
+\end{itemize}
+\item Description: Push the contents of 'q' to the zero page stack, where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation INCREMENTS the stack pointer.
+\item States:
+\begin{itemize}
+	\item state 1: select SP on address bus mux. select 'q' on data bus mux.
+	\item state 2: assert wren, maintain mux selections (memory access 1)
+	\item state 3: unassert wren, assert ph.
+\end{itemize}
+\end{itemize}
+
 \subsection{Pop GPR}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item PPA
+	\item PPG
+	\item PPH
+	\item PPX
+	\item PPY
+\end{itemize}
+\item Description: Pop the top of the zero page stack into 'q', where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation DECREMENTS the stack pointer.
+\item States: 
+\begin{itemize}
+	\item state 1: select SP on the address bus mux. select M on the data bus mux. assert pp on SP.
+	\item state 2: unassert pp on SP. maintain mux selection.
+	\item state 3: maintain mux selection (memory access 1)
+	\item state 4: maintain mux selection (memory access 2)
+	\item state 5: assert la on 'q'.
+	\item state 6: unassert la
+\end{itemize}
+\end{itemize}
+
 \subsection{ALU Operations}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item ADD
+	\item SUB
+	\item AND
+	\item NND
+	\item ORR
+	\item XOR
+	\item STL
+	\item STR
+\end{itemize}
+\item Description: perform the selected operation between the X and Y (just X) registers and store the result in the A register. overwrite the status flags in S. the following eight operations are supported:
+\begin{itemize}
+	\item ADD: store X + Y in A
+	\item SUB: store X - Y in A
+	\item AND: store X AND Y in A
+	\item NND: store X NAND Y in A
+	\item ORR: store X OR Y in A
+	\item XOR: store X XOR Y in A
+	\item STL: shift X towards the left. LSB becomes 0. store in A
+	\item STR: shift X towards the right. MSB becomes 0. store in A
+\end{itemize}
+\item States: 
+\begin{itemize}
+	\item state 1: select operation in alu operation bus. assert lb on A. assert ld on S
+	\item state 2: unassert lb and ld
+\end{itemize}
+\end{itemize}
+
 \subsection{Set Status Flag}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item SZF
+	\item SNF
+	\item SCF
+	\item SOF
+\end{itemize}
+\item Description: (S)ets ('r') (F)lag where 'r' is one of (Z)ero, (N)egative, (C)arry (O)overflow.
+\item States:
+\begin{itemize}
+	\item state 1: assert appropriate flag set line
+\end{itemize}
+\end{itemize}
+
 \subsection{Clear Status Flag}
+\begin{itemize}
+\item Mnemonics 
+\begin{itemize}
+	\item CZF
+	\item CNF
+	\item CCF
+	\item COF
+\end{itemize}
+\item Description: (C)lears ('r') (F)lag where 'r' is one of Z)ero, (N)egative, (C)arry (O)overflow.
+\item States:
+\begin{itemize}
+	\item state 1: assert appropriate flag clear line
+\end{itemize}
+\end{itemize}
+
 \subsection{Conditional Branch}
+\begin{itemize}
+\item Mnemonics :
+\begin{itemize}
+	\item BZS
+	\item BZC
+	\item BNS
+	\item BNC
+	\item BCS
+	\item BCC
+	\item BOS
+	\item BOC
+\end{itemize}
+\item description: branch if true. execute the immediately following instruction if the condition is false. if the condition is true skipthe immediately following instruction and execute the next one instead. note: a false result gets only one instruction to use before the true branch is executed. this means that a useful idiom is the 'escape address' as follows:
+\item States:
+\begin{itemize}
+	\item state 1: assert appropriate branch line. line is ANDed with appropriate flag (or NOT flag) and the result is applied to `incpc`
+\end{itemize}
+\end{itemize}
+
 \subsection{No-operation}
+\begin{itemize}
+\item Mnemonic and Code:
+\begin{itemize}
+	\item `NOP`
+\end{itemize}
+\item Description: Do nothing for one EXEC state. This instruction takes 6 clks to complete
+\item States:
+\begin{itemize}
+	\item state 1: set control bus to 0.
+\end{itemize}
+\end{itemize}
+
 \subsection{Jump}
+\begin{itemize}
+\item Mnemonic and Code:
+\begin{itemize}
+	\item `JMP`
+\end{itemize}
+\item Description: sets the PC so that the next instruction executed is the one stored at the address represented by GH ((J)u(MP) to GH). Note that since a machine cycle ends with the PC incrementing it is necessary to decrement the PC after loading it with GH so that the next instruction executed is at address GH.
+\item States:
+\begin{itemize}
+	\item state 1: select 'GH - 1' on the address bus mux. assert `ld` on the PC.
+	\item state 2: unassert `ld` on the PC
+\end{itemize}
+\end{itemize}
+
 \subsection{Instruction Table}
-Table 1 shows each instruction and its corresponding hexadecimal code. Each
-instruction is a single byte long, some instructions take a single byte-literal 
-argument represented with a '\texttt{\#}'. The hexadecimal code (microaddress) 
-for a a given instruction is found by adding the high nybble (row) and low 
-nybble (column). Detailed descriptions each instruction are provided in 
-sections 6.1 to 6.13.
+Table 1 shows each instruction and its corresponding hexadecimal opcode. Each
+instruction is a single byte long, however some instructions take a single-byte
+literal argument represented with a '\texttt{\#}'. The hexadecimal opcode
+(microaddress) for a a given instruction is found by adding the high nybble
+(row) and low nybble (column). Detailed descriptions each instruction are
+provided in sections 6.1 to 6.13. The shaded cells represent microaddresses
+that contain intermediary microstates needed to implement the listed opcodes.
+Since opcodes increase from left to right in table 1 the number of shaded cells
+following an opcode is a direct indication of how long that instruction takes
+to complete. For example: \texttt{PPA} takes 3 times as long to execute as
+\texttt{LDA X}. For more detail on the specifics of the machine cycle and
+instruction execution see section 4.
 \par
 
 \newpage
