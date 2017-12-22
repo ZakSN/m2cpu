@@ -8,6 +8,8 @@
 \usepackage{pdflscape}
 \usepackage{graphicx}
 \usepackage{wrapfig}
+\usepackage[table]{xcolor}
+\usepackage{hhline}
 
 \newcommand{\mt}{M2CPU}
 \newcommand{\mi}{M2 instruction set}
@@ -601,32 +603,37 @@ sections 6.1 to 6.13.
 \par
 
 \newpage
+
+\definecolor{ucode-grey}{gray}{0.75}
+\newcommand{\fc}{\cellcolor{ucode-grey}}
+
 \thispagestyle{empty}
 \begin{landscape}
 \begin{table}
 	\makebox[\linewidth]{
 		\texttt{
+		\arrayrulewidth=0.76pt
 		\begin{tabular}{ c c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
 			\cline{3-18}
-			&&\multicolumn{16}{|c|}{LOW NYBBLE} \\ 
+			&&\multicolumn{16}{c|}{LOW NYBBLE} \\ 
 			\cline{3-18}
-			&&0x00&0x01&0x02&0x03&0x04&0x05&0x06&0x07&0x08&0x09&0x0A&0x0B&0x0C&0x0D&0x0E&0x0F \\ \hline
-			\multicolumn{1}{|c|}{}&0x00&NOP&LDA G&&LDA H&&LDA X&&LDA Y&&LDSP X&&&ADD&&BZS& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{}&0x10&&LDG A&&LDG H&&LDG X&&LDG Y&&LDX SP&&&SUB&&BZC& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{H}&0x20&&LDH A&&LDH G&&LDH X&&LDH Y&&LDY S&&&AND&&BNS& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{I}&0x30&&LDX A&&LDX G&&LDX H&&LDX Y&&LDGH PC&&&NND&&BNC& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{G}&0x40&&LDY A&&LDY G&&LDY H&&LDY X&&JMP&&&ORR&&BCS& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{H}&0x50&&&&&&&&&&&&&XOR&&BCC& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{}&0x60&LDM A&&&LDA M&&&&LDA \#&&&&&STL&&BOS& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{N}&0x70&LDM G&&&LDG M&&&&LDG \#&&&&&STR&&BOC& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{Y}&0x80&LDM H&&&LDH M&&&&LDH \#&&&&&&&SZF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{B}&0x90&LDM X&&&LDX M&&&&LDX \#&&&&&&&CZF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{B}&0xA0&LDM Y&&&LDY M&&&&LDY \#&&&&&&&SNF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{L}&0xB0&PHA&&&&&PPA&&&&&&&&&CNF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{E}&0xC0&PHG&&&&&PPG&&&&&&&&&SCF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{}&0xD0&PHH&&&&&PPH&&&&&&&&&CCF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{}&0xE0&PHX&&&&&PPX&&&&&&&&&SOF& \\ \cline{2-18}
-			\multicolumn{1}{|c|}{}&0xF0&PHY&&&&&PPY&&&&&&&&&COF& \\ \hline
+			&&0x00&0x01&0x02&0x03&0x04&0x05&0x06&0x07&0x08&0x09&0x0A&0x0B&0x0C&0x0D&0x0E&0x0F \\ \hhline{*{18}{-}}
+			\multicolumn{1}{|c|}{}  &0x00&NOP  &LDA G&\fc{}&LDA H&\fc{}&LDA X&\fc{}&LDA Y &\fc{}&LDSP X &     &     &ADD&\fc{}&BZS& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{}  &0x10&     &LDG A&\fc{}&LDG H&\fc{}&LDG X&\fc{}&LDG Y &\fc{}&LDX SP &     &     &SUB&\fc{}&BZC& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{H} &0x20&     &LDH A&\fc{}&LDH G&\fc{}&LDH X&\fc{}&LDH Y &\fc{}&LDY S  &     &     &AND&\fc{}&BNS& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{I} &0x30&     &LDX A&\fc{}&LDX G&\fc{}&LDX H&\fc{}&LDX Y &\fc{}&LDGH PC&\fc{}&     &NND&\fc{}&BNC& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{G} &0x40&     &LDY A&\fc{}&LDY G&\fc{}&LDY H&\fc{}&LDY X &\fc{}&JMP    &\fc{}&     &ORR&\fc{}&BCS& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{H} &0x50&     &     &     &     &     &     &     &      &     &       &     &     &XOR&\fc{}&BCC& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{}  &0x60&LDM A&\fc{}&\fc{}&LDA M&\fc{}&\fc{}&\fc{}&LDA \#&\fc{}&\fc{}  &\fc{}&\fc{}&STL&\fc{}&BOS& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{N} &0x70&LDM G&\fc{}&\fc{}&LDG M&\fc{}&\fc{}&\fc{}&LDG \#&\fc{}&\fc{}  &\fc{}&\fc{}&STR&\fc{}&BOC& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{Y} &0x80&LDM H&\fc{}&\fc{}&LDH M&\fc{}&\fc{}&\fc{}&LDH \#&\fc{}&\fc{}  &\fc{}&\fc{}&   &     &SZF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{B} &0x90&LDM X&\fc{}&\fc{}&LDX M&\fc{}&\fc{}&\fc{}&LDX \#&\fc{}&\fc{}  &\fc{}&\fc{}&   &     &CZF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{B} &0xA0&LDM Y&\fc{}&\fc{}&LDY M&\fc{}&\fc{}&\fc{}&LDY \#&\fc{}&\fc{}  &\fc{}&\fc{}&   &     &SNF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{L} &0xB0&PHA  &\fc{}&\fc{}&\fc{}&     &PPA  &\fc{}&\fc{}&\fc{}&\fc{}   &\fc{}&     &   &     &CNF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{E} &0xC0&PHG  &\fc{}&\fc{}&\fc{}&     &PPG  &\fc{}&\fc{}&\fc{}&\fc{}   &\fc{}&     &   &     &SCF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{}  &0xD0&PHH  &\fc{}&\fc{}&\fc{}&     &PPH  &\fc{}&\fc{}&\fc{}&\fc{}   &\fc{}&     &   &     &CCF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{}  &0xE0&PHX  &\fc{}&\fc{}&\fc{}&     &PPX  &\fc{}&\fc{}&\fc{}&\fc{}   &\fc{}&     &   &     &SOF& \\ \hhline{|~|*{17}{-}}
+			\multicolumn{1}{|c|}{}  &0xF0&PHY  &\fc{}&\fc{}&\fc{}&     &PPY  &\fc{}&\fc{}&\fc{}&\fc{}   &\fc{}&     &   &     &COF& \\ \hline
 		\end{tabular}
 		}
 	}

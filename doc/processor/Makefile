@@ -20,11 +20,11 @@ view: $(DOCUMENT).pdf
 	$(PDFVIEWER) $(DOCUMENT).pdf
 
 clean:
-	rm *.dvi
-	rm *.out
-	rm *.toc
-	rm *.aux
-	rm *.log
-	rm *.pdf
-	rm *.lof
-	rm *.lot
+	rm -f *.dvi
+	rm -f *.out
+	rm -f *.toc
+	rm -f *.aux
+	rm -f *.log
+	rm -f *.pdf
+	rm -f *.lof
+	rm -f *.lot
