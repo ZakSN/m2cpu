@@ -144,7 +144,7 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	- `XOR` (0x5C)
 	- `STL` (0x6C)
 	- `STR` (0x7C)
-- Description: perform the selected operation between the X and Y (just X) registers and store the result in the A register. overwrite the status flags in S. the following eight operations are supported:
+- Description: perform the selected operation between the X and Y (or just X) registers and store the result in the A register. overwrite the status flags in S. the following eight operations are supported:
 	- `ADD`: store X + Y in A
 	- `SUB`: store X - Y in A
 	- `AND`: store X AND Y in A
@@ -175,7 +175,7 @@ The layout of the instruction space is also presented in `doc/m2cpu_ISA.ods`
 	- CNF (0xBE)
 	- CCF (0xDE)
 	- COF (0xFE)
-- Description: (C)lears ('r') (F)lag where 'r' is one of Z)ero, (N)egative, (C)arry (O)overflow.
+- Description: (C)lears ('r') (F)lag where 'r' is one of (Z)ero, (N)egative, (C)arry (O)overflow.
 - States:
 	- state 1: assert appropriate flag clear line
 - Number: 4

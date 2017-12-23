@@ -34,6 +34,9 @@
 \newcommand{\Ex}{\texttt{EXEC}}
 \newcommand{\In}{\texttt{INCPC}}
 
+\newcommand{\qq}{\textit{q}}
+\newcommand\rr{\textit{r}}
+
 \title{M2 Architecture And Implementation}
 \author{Zakary Nafziger}
 \date{15 December 2017}
@@ -251,10 +254,11 @@ microstates is found in sections 3.3 and 4 respectively.
 
 \subsubsection{Unconditional Jump}
 An unconditional jump sets the address of the next instruction to be executed
-as the address held in the \Gr{}\Hr{} register. Since the \PC{} is incremented
-at the end of every machine cycle  the jump instruction must decrement the \PC{}
-after setting it to the value of the \Gr{}\Hr{} register so that the next 
-instruction executed is the one held at the address \Gr{}\Hr{}.
+to the address held in the \Gr{}\Hr{} register. Since the \PC{} is incremented
+at the end of every machine cycle (see section 4.1) the jump instruction must
+load the \PC{} with one less than the value stored in the \Gr{}\Hr{} register.
+so that the next instruction executed is the one held at the address 
+\Gr{}\Hr{}.
 \par
 
 \subsubsection{Conditional Branch}
@@ -582,271 +586,359 @@ in sections 2 and 4 respectively. Table 1 (section 6.14) provides a handy
 programming reference.
 \par
 
+In this section \textit{italics} denote variables. The values that a variable 
+may take are defined in each subsection. \texttt{Monospace} denotes literal 
+code. \texttt{UPPERCASE MONOSPACE} denotes M2 instruction mnemonics or M2 
+register names. \texttt{lowercase monospace} denotes port names in the VHDL
+code. For example \texttt{LDA X} is an instruction that the \mt{} can execute,
+whereas \texttt{la} is a port present on each GPR in the VHDL code.
+\par
+
 \subsection{Load GPR}
+These instrcutions load \qq{} with the value of \rr{}, where \qq{} and \rr{}
+are general purpose registers. Mnemonics take the form: LD\qq{} \rr{}.
+\par
+
 \begin{itemize}
 \item Mnemonics:
 \begin{itemize}
-	\item LDA G, LDA H, LDA X LDA Y
-	\item LDG A, LDG H, LDG X LDG Y
-	\item LDH A, LDH G, LDH X LDH Y
-	\item LDX A, LDX G, LDX H LDX Y
-	\item LDY A, LDY G, LDY H LDY X
+	\item \texttt{LDA G}, \texttt{LDA H}, \texttt{LDA X}, \texttt{LDA Y}
+	\item \texttt{LDG A}, \texttt{LDG H}, \texttt{LDG X}, \texttt{LDG Y}
+	\item \texttt{LDH A}, \texttt{LDH G}, \texttt{LDH X}, \texttt{LDH Y}
+	\item \texttt{LDX A}, \texttt{LDX G}, \texttt{LDX H}, \texttt{LDX Y}
+	\item \texttt{LDY A}, \texttt{LDY G}, \texttt{LDY H}, \texttt{LDY X}
 \end{itemize}
-\item Description: Loads 'q' with the value of 'r', where 'q' and 'r' are general purpose registers. Mnemonic schema: LDq r.
 \item States:
 \begin{itemize}
-	\item state 1: select 'r' on the data bus mux. assert la on 'q'
-	\item state 2: unassert la on 'q'
+	\item State 1: Select \rr{} on the data bus mux. Assert \texttt{la} on
+	\qq{}.
+	\item State 2: Unassert \texttt{la} on \qq{}. Maintain DBM selection.
 \end{itemize}
 \end{itemize}
 
 \subsection{Load SPR}
+These instructions are conceptualy similar to the load GPR instructions
+(section 6.1) but have varying microcode implementations due to the fact that
+each SPR is implemented and connected in a unique manner.
+\par
+
+This instructon Loads the combined \Gr{}\Hr{} register with the value of the 
+\PC{}. The reverse operation; loading the \PC{} with the value of the 
+\Gr{}\Hr{} register is implemented by the 'jump' instrcution (section 6.13).
+\par
+
 \begin{itemize}
-\item Mnemonic and Code:
+\item Mnemonic:
 \begin{itemize}
-	\item LDGH PC
+	\item \texttt{LDGH PC}
 \end{itemize}
-\item Description: Loads 'q' with the value of 'r', where 'q' and 'r' are 16 bit registers. Mnemonic schema: LDq r.
 \item States:
 \begin{itemize}
-	\item state 1: select 'r' on the address bus mux. assert load lines (lb on G and H) on 'q'.
-	\item state 2: unassert load lines on 'q'
+	\item State 1: Select \Gr{}\Hr{} on the address bus mux. Assert load
+	lines (\texttt{lb} on \Gr{} and \Hr{} respectively) on the combined 
+	\Gr{}\Hr{} register.
+	\item State 2: Unassert load lines on \Gr{}. Maintain ABM selection.
 \end{itemize}
 \end{itemize}
 
+These instructions load the \Xr{} register with the stack pointer or the
+stack pointer with the \Xr{} register.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item LDSP X
-	\item LDX SP
+	\item \texttt{LDSP X}
+	\item \texttt{LDX SP}
 \end{itemize}
-\item Description: Load x with the stack pointer or load the stack pointer with x.
 \item States: 
 \begin{itemize}
-	\item state 1: assert lb on X for LDX SP, or assert ld on SP for LDSP X.
+	\item State 1: Assert \texttt{lb} on the \Xr{} register for 
+	\texttt{LDX SP}, or assert \texttt{ld} on \SP{} for \texttt{LDSP X}.
 \end{itemize}
 \end{itemize}
 
+Load the \Yr{} register with the value of the status register.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonic:
 \begin{itemize}
-	\item LDY S
+	\item \texttt{LDY S}
 \end{itemize}
-\item Description: Load the Y register with the value of the status register.
 \item States:
 \begin{itemize}
-	\item state 1: assert lb on Y.
+	\item State 1: Assert \texttt{lb} on the \Yr{} register.
 \end{itemize}
 \end{itemize}
 
 \subsection{Load Memory From GPR}
+These instructions Load memory at the address held in the \Gr{}\Hr{} register
+with the value held in \qq{}. Where \qq{} is one of the GPRs.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item LDM A
-	\item LDM G
-	\item LDM H
-	\item LDM X
-	\item LDM Y
+	\item \texttt{LDM A}
+	\item \texttt{LDM G}
+	\item \texttt{LDM H}
+	\item \texttt{LDM X}
+	\item \texttt{LDM Y}
 \end{itemize}
-\item Description: Load the memory at the address held in GH with the value of 'q' where 'q' is one of the general purpose registers.
 \item States:
 \begin{itemize}
-	\item state 1: select GH on the address bus mux. select 'q' on the data bus mux.
-	\item state 2: assert wren
-	\item state 3: unassert wren
+	\item State 1: Select \Gr{}\Hr{} on the ABM. Select \qq{} on the DBM.
+	\item State 2: Assert \texttt{memory\_wren}. Maintain bus multiplexer 
+	selections (memory access 1).
+	\item State 3: Unassert \texttt{memory\_wren}. Maintain bus multiplexer
+	selections.
 \end{itemize}
 \end{itemize}
 
 \subsection{Load GPR From Memory}
+Load \qq{} with the value held in memory at the address held in the \Gr{}\Hr{}
+register. Where \qq{} is a GPR.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item LDA M
-	\item LDG M
-	\item LDH M
-	\item LDX M
-	\item LDY M
+	\item \texttt{LDA M}
+	\item \texttt{LDG M}
+	\item \texttt{LDH M}
+	\item \texttt{LDX M}
+	\item \texttt{LDY M}
 \end{itemize}
-\item Description: Load 'q' with the value of held in memory at the address GH.
 \item States:
 \begin{itemize}
-	\item state 1: select GH on the address bus mux. select M on the data bus mux.
-	\item state 2: same as state 1 (memory access)
-	\item state 3: assert la on 'q'
-	\item state 4: unassert la
+	\item State 1: Select \Gr{}\Hr{} on the ABM. Select memory on the DBM.
+	\item State 2: Maintain bus multiplexer selections (memory access 1)
+	\item State 3: Assert \texttt{la} on \qq{}. Maintain bus multiplexer
+	selections (memory access 2).
+	\item State 4: Unassert \texttt{la}. Maintain bus multiplexer 
+	selections.
 \end{itemize}
 \end{itemize}
 
 \subsection{Load GPR With Literal}
+These instructions Load \qq{} with a literal hexadecimal value (represented by
+a \#). Where \qq{} is a GPR. The literal is stored in the address directly 
+following the instruction. This means that this instruction assembles to two
+addresses; one for the instrcution code and one for the constant value.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item LDA \#
-	\item LDG \#
-	\item LDH \#
-	\item LDX \#
-	\item LDY \#
+	\item \texttt{LDA \#}
+	\item \texttt{LDG \#}
+	\item \texttt{LDH \#}
+	\item \texttt{LDX \#}
+	\item \texttt{LDY \#}
 \end{itemize}
-\item Description: Load 'q' with the constant \#. \# is stored in the address directly following the instruction. this instruction TAKES TWO ADDRESSES.
 \item States:
 \begin{itemize}
-	\item state 1: select PC on the address bus mux. select M on the data bus mux. assert incpc
-	\item state 2: unassert incpc. maintain mux selections (memory access 1)
-	\item state 3: maintain mux selections (memory access 2)
-	\item state 4: assert la on 'q'
-	\item state 5: unassert la on 'q'
+	\item State 1: Select the \PC{} on the ABM. Select memory on the DBM.
+	Assert \texttt{incpc}.
+	\item State 2: Unassert \texttt{incpc}. Maintain bus multiplexer
+	selections (memory access 1).
+	\item State 3: Maintain bus multiplexer selections (memory access 2).
+	\item State 4: Assert \texttt{la} on \qq{}.
+	\item State 5: Unassert \texttt{la} on \qq{}.
 \end{itemize}
 \end{itemize}
 
 \subsection{Push GPR}
+these instructions push the contents of \qq{} to the zero page stack. Where
+\qq{} is a GPR. The stack grows from low addresses to high addresses so this
+operation increments the stack pointer.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item PHA
-	\item PHG
-	\item PHH
-	\item PHX
-	\item PHY
+	\item \texttt{PHA}
+	\item \texttt{PHG}
+	\item \texttt{PHH}
+	\item \texttt{PHX}
+	\item \texttt{PHY}
 \end{itemize}
-\item Description: Push the contents of 'q' to the zero page stack, where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation INCREMENTS the stack pointer.
 \item States:
 \begin{itemize}
-	\item state 1: select SP on address bus mux. select 'q' on data bus mux.
-	\item state 2: assert wren, maintain mux selections (memory access 1)
-	\item state 3: unassert wren, assert ph.
+	\item State 1: Select the \SP{} on the ABM. Select \qq{} on the DBM.
+	\item State 2: Assert \texttt{memory\_wren}. Maintain bus multiplexer
+	selections (memory access 1).
+	\item State 3: Unassert \texttt{memory\_wren}. Assert \texttt{ph} on 
+	\SP{}. 
+	\item State 4: Unassert \texttt{ph} on \SP{}.
 \end{itemize}
 \end{itemize}
 
 \subsection{Pop GPR}
+These instructions pop the top of the zero page stack into \qq{}. Where \qq{}
+is a GPR. The stack grows from low addresses to high addresses so this 
+operation decremnts the stack pointer.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item PPA
-	\item PPG
-	\item PPH
-	\item PPX
-	\item PPY
+	\item \texttt{PPA}
+	\item \texttt{PPG}
+	\item \texttt{PPH}
+	\item \texttt{PPX}
+	\item \texttt{PPY}
 \end{itemize}
-\item Description: Pop the top of the zero page stack into 'q', where 'q' is a general purpose register. The stack grows from low addresses to high addresses so this operation DECREMENTS the stack pointer.
 \item States: 
 \begin{itemize}
-	\item state 1: select SP on the address bus mux. select M on the data bus mux. assert pp on SP.
-	\item state 2: unassert pp on SP. maintain mux selection.
-	\item state 3: maintain mux selection (memory access 1)
-	\item state 4: maintain mux selection (memory access 2)
-	\item state 5: assert la on 'q'.
-	\item state 6: unassert la
+	\item State 1: Select \SP{} on the ABM. Select memory on the DBM.
+	Assert \texttt{pp} on \SP{}.
+	\item State 2: Unassert \texttt{pp} on \SP{}. Maintain bus multiplexer
+	selections.
+	\item State 3: Maintain bus multiplexer selections (memory access 1).
+	\item State 4: Maintain bus multiplexer selections (memory access 2).
+	\item State 5: Assert \texttt{la} on \qq{}.
+	\item State 6: Unassert \texttt{la}.
 \end{itemize}
 \end{itemize}
 
 \subsection{ALU Operations}
+These instructions perform the selected operation between the \Xr{} and \Yr
+(or just \Xr{}) registers and store the result in the \Ar{} register. Write
+status flags in the status register. Eight operations are supported, the
+description of each instruction follows its mnemonic.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item ADD
-	\item SUB
-	\item AND
-	\item NND
-	\item ORR
-	\item XOR
-	\item STL
-	\item STR
-\end{itemize}
-\item Description: perform the selected operation between the X and Y (just X) registers and store the result in the A register. overwrite the status flags in S. the following eight operations are supported:
-\begin{itemize}
-	\item ADD: store X + Y in A
-	\item SUB: store X - Y in A
-	\item AND: store X AND Y in A
-	\item NND: store X NAND Y in A
-	\item ORR: store X OR Y in A
-	\item XOR: store X XOR Y in A
-	\item STL: shift X towards the left. LSB becomes 0. store in A
-	\item STR: shift X towards the right. MSB becomes 0. store in A
+	\item \texttt{ADD}: store \Xr{} + \Yr{} in \Ar{}
+	\item \texttt{SUB}: store \Xr{} - \Yr{} in \Ar{}
+	\item \texttt{AND}: store \Xr{} AND \Yr{} in \Ar{}
+	\item \texttt{NND}: store \Xr{} NAND \Yr{} in \Ar{}
+	\item \texttt{ORR}: store \Xr{} OR \Yr{} in \Ar{}
+	\item \texttt{XOR}: store \Xr{} XOR \Yr{} in \Ar{}
+	\item \texttt{STL}: shift \Xr{} towards the left. LSb becomes 0. store
+	result in \Ar{}. Carry flag is set to old MSb.
+	\item \texttt{STR}: shift \Xr{} towards the right. MSb becomes 0. store
+	result in \Ar{}. Carry flag is set to old LSb.
 \end{itemize}
 \item States: 
 \begin{itemize}
-	\item state 1: select operation in alu operation bus. assert lb on A. assert ld on S
-	\item state 2: unassert lb and ld
+	\item State 1: Select operation on ALU operation bus. Assert 
+	\texttt{lb} on \Ar{}. Assert \texttt{ld} on status register.
+	\item State 2: Unassert \texttt{lb} and \texttt{ld}. Maintain ALU 
+	operation bus selection.
 \end{itemize}
 \end{itemize}
 
 \subsection{Set Status Flag}
+These instructions (S)et the (\rr{}) (F)lag. Where \rr{} is one of the
+processor's status flags: (Z)ero, (N)egative, (C)arry (O)overflow.
+\par
+
 \begin{itemize}
 \item Mnemonics :
 \begin{itemize}
-	\item SZF
-	\item SNF
-	\item SCF
-	\item SOF
+	\item \texttt{SZF}
+	\item \texttt{SNF}
+	\item \texttt{SCF}
+	\item \texttt{SOF}
 \end{itemize}
-\item Description: (S)ets ('r') (F)lag where 'r' is one of (Z)ero, (N)egative, (C)arry (O)overflow.
 \item States:
 \begin{itemize}
-	\item state 1: assert appropriate flag set line
+	\item State 1: Assert the appropriate flag set line on the status
+	register.
 \end{itemize}
 \end{itemize}
 
 \subsection{Clear Status Flag}
+These instructions (C)lear the (\rr{}) (F)lag. Where \rr{} is one of the
+processor's status flags: (Z)ero, (N)egative, (C)arry (O)overflow.
+\par
+
 \begin{itemize}
 \item Mnemonics 
 \begin{itemize}
-	\item CZF
-	\item CNF
-	\item CCF
-	\item COF
+	\item \texttt{CZF}
+	\item \texttt{CNF}
+	\item \texttt{CCF}
+	\item \texttt{COF}
 \end{itemize}
-\item Description: (C)lears ('r') (F)lag where 'r' is one of Z)ero, (N)egative, (C)arry (O)overflow.
 \item States:
 \begin{itemize}
-	\item state 1: assert appropriate flag clear line
+	\item State 1: Assert the appropriate flag clear line on the status
+	register.
 \end{itemize}
 \end{itemize}
 
 \subsection{Conditional Branch}
+These instructions cause program flow to branch if the specified condition is
+true. The condition evaluated is the state of one of the processor's status
+flags. The next instruction is executed if the condition is false. Otherwise
+skip the next instruction and execute the one that follows it instead. Note: a
+false result gets only one instruction to use before the true branch is executed.
+For more information on conditional branches see section 2.4.2. Mnemonics are of
+the form '(B)ranch if \rr{} is (S)et' or '(B)ranch if \rr{} is (C)lear'. Where
+\rr{} is one of the processor's status flags: (Z)ero, (N)egative, (C)arry
+(O)overflow.
+\par
+
 \begin{itemize}
-\item Mnemonics :
+\item Mnemonics:
 \begin{itemize}
-	\item BZS
-	\item BZC
-	\item BNS
-	\item BNC
-	\item BCS
-	\item BCC
-	\item BOS
-	\item BOC
+	\item \texttt{BZS}
+	\item \texttt{BZC}
+	\item \texttt{BNS}
+	\item \texttt{BNC}
+	\item \texttt{BCS}
+	\item \texttt{BCC}
+	\item \texttt{BOS}
+	\item \texttt{BOC}
 \end{itemize}
-\item description: branch if true. execute the immediately following instruction if the condition is false. if the condition is true skipthe immediately following instruction and execute the next one instead. note: a false result gets only one instruction to use before the true branch is executed. this means that a useful idiom is the 'escape address' as follows:
 \item States:
 \begin{itemize}
-	\item state 1: assert appropriate branch line. line is ANDed with appropriate flag (or NOT flag) and the result is applied to `incpc`
+	\item State 1: Assert appropriate branch line on the control bus. The
+	branch lines are ANDed with the appropriate flag (or NOT flag) and the
+	result is applied to \texttt{incpc} on the program counter.
 \end{itemize}
 \end{itemize}
 
 \subsection{No-operation}
+This instruction does nothing for one EXEC state. This instruction takes 6 clks
+to complete. For more information on the no-operation see section 2.4.
 \begin{itemize}
-\item Mnemonic and Code:
+\item Mnemonic:
 \begin{itemize}
-	\item `NOP`
+	\item \texttt{NOP}
 \end{itemize}
-\item Description: Do nothing for one EXEC state. This instruction takes 6 clks to complete
 \item States:
 \begin{itemize}
-	\item state 1: set control bus to 0.
+	\item State 1: Set control bus to 0.
 \end{itemize}
 \end{itemize}
 
 \subsection{Jump}
+This intruction sets the \PC{} so that the next instruction executed is the one
+stored at the address held in the \Gr{}\Hr{} register (i.e. (J)u(MP) to GH).
+Note that since a machine cycle ends with the \PC{} incrementing it is 
+necessary to load the \PC{} with the address held in \Gr{}\Hr{} less 1. For 
+more information on the Jump instruction see section 2.4.1. For more 
+information on the \mt{}'s machine cycle see section 4.1.
+\par
+
 \begin{itemize}
-\item Mnemonic and Code:
+\item Mnemonic:
 \begin{itemize}
-	\item `JMP`
+	\item \texttt{JMP}
 \end{itemize}
-\item Description: sets the PC so that the next instruction executed is the one stored at the address represented by GH ((J)u(MP) to GH). Note that since a machine cycle ends with the PC incrementing it is necessary to decrement the PC after loading it with GH so that the next instruction executed is at address GH.
 \item States:
 \begin{itemize}
-	\item state 1: select 'GH - 1' on the address bus mux. assert `ld` on the PC.
-	\item state 2: unassert `ld` on the PC
+	\item State 1: Select \texttt{GH - 1} on the ABM. Assert \texttt{ld} on
+	the \PC{}.
+	\item state 2: Unassert \texttt{ld} on the \PC{}. Maintain bus 
+	multiplexer selections.
 \end{itemize}
 \end{itemize}
 
