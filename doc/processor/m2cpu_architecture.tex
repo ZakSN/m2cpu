@@ -559,9 +559,29 @@ microprograms, i.e. 'the opcode' for that instruction.
 
 \newpage
 \section{VHDL Implementation}
-make a section for each file and describe what it is on fig 1
-%TODO: branch decoder
-%TODO: gh - 1 on ABM
+In general the VHDL implementation of the \mt{} closely follows the 
+architecture diagram presented in section 3 (figure 1). Each block in figure 1
+corresponds to a VHDL file in the processor's source tree. The dotted box in 
+figure 1 corresponds to the \texttt{central\_processing\_unit.vhd} file. The
+other blocks correspond to similarly named files. The VHDL source differs from
+the diagram in a few areas. The bus multiplexers: ABM, DBM, CBEN, are not 
+implemented as distinct entities but are instead part of the 
+\texttt{central\_processing\_unit.vhd} file. The GPRs are multiple instances
+of the \texttt{general\_purpose\_register.vhd} entity rather than distinct
+entities. \texttt{genral\_purpose\_register.vhd} and most SPRs are implemented
+as simple 8-bit registers with some additional logic. The underlying 8-bit 
+registers are implemented as instances of the \texttt{register\_8bit.vhd} 
+entity. Some other important implementation details relating to bus 
+architecture, branch instruction decoding, and the \texttt{JMP} instruction are
+explained in the following subsections.
+
+The processor's source should be relatively easy to follow once one is familiar
+with figure 1 and the abbreviations used throughout this document. As such a 
+detailed description of what each file does is largely uneeeded. If one
+wishes for greater detail about the processor's implementation one is encouraged
+to read through the VHDL source.
+\par
+
 \subsection{Bus Architecture Implementation}
 Buses are often represented as strictly passive, i.e. wires. This presents a 
 problem when multiple logical outputs are attached to a single bus: suppose one
@@ -574,6 +594,11 @@ bus are attached to the inputs of a data bus multiplexer (DBM). The output of
 the DBM is then attached to the input of every device that reads from the data 
 bus.
 \par
+
+\subsection{Branch Instruction Implementation}
+
+\subsection{Jump Instruction Implementation}
+%gh - 1 thing
 
 \newpage
 \section{Detailed Instruction Descriptions}
