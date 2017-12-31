@@ -230,7 +230,7 @@ slow instructions in the \mi{}.
 \par
 
 \subsection{Arithmetic and Logical Instructions}
-Arithmetic and logical instructions preform an artithmetic or logical function
+Arithmetic and logical instructions preform an arithmetic or logical function
 on the \Xr{} and \Yr{} registers, store the result in the \Ar{} register and 
 update the flags in the \Sr{} register. The \mt{}'s ALU can calculate 8 
 different functions (detailed in section 2.6). Six of these functions require
@@ -238,7 +238,7 @@ two inputs (\Xr{} and \Yr{}), and two functions require only one input, (\Xr{}).
 \par
 
 \subsection{Program Control Instructions}
-Program control instrcutions control the flow of the program. There are four
+Program control instructions control the flow of the program. There are four
 types of program control instructions: no-operation, unconditional jump,
 conditional branch, and status flag manipulation.
 \par
@@ -246,7 +246,7 @@ conditional branch, and status flag manipulation.
 As the name suggests the no-operation does nothing. The no-operation is not 
 quite a program control instruction, it is more accurately 'the lack of an 
 instruction'. The behaviour of the no-operation is well defined so that if a 
-program attempts to execute unitialized memory the processor will behave in a 
+program attempts to execute uninitialized memory the processor will behave in a 
 predictable (and safe) manner. A no-operation takes an entire machine cycle and
 one microstate to execute. More information about machine cycles and 
 microstates is found in sections 3.3 and 4 respectively.
@@ -325,7 +325,7 @@ allows status flags to be stored, or inspected by the program.
 \section{\mt{} Architecture}
 This section outlines the modular architecture of the \mt{}. The implementation
 of this architecture is described in section 5. The \mt{} is designed (and 
-implemented) as a series of modules that communicate over three major busses. 
+implemented) as a series of modules that communicate over three major buses. 
 The way that these modules interact with each other to carry out instructions is
 described in the next section (section 4). In general This section describes the 
 processor's 'hardware', whereas section 4 describes how this 'hardware' can be 
@@ -337,7 +337,7 @@ The architecture of the \mt{} is well described by a block diagram. Figure 1
 shows all of the major components of the processor and is organized very 
 similarly to the actual VHDL implementation of the \mt{} (section 5). The 
 dotted line in figure 1 denotes the boundary of the processor and serves to 
-show the seperation between the processor and memory. The dashed arrows denote
+show the separation between the processor and memory. The dashed arrows denote
 single bit control buses (section 4), the light weight arrows denote 8-bit data
 and instruction buses, and the medium weight arrows denote 16-bit address buses. 
 The heavy weight line denotes the control bus. The bus architecture is 
@@ -355,7 +355,7 @@ decode instructions in sequence. Since the operation of the control logic is
 largely invisible to the programmer it is described in detail in section 4.
 \par
 
-In an effort to preserve the legability of figure 1 a number of abbreviations
+In an effort to preserve the legibility of figure 1 a number of abbreviations
 have been used to label the processor's functional blocks. These abbreviations
 are described below:
 \begin{itemize}
@@ -416,7 +416,7 @@ address bus and the \ibusnum{}-bit control bus. The data bus is used to move
 data around the processor. Bytes on the data bus are never interpreted as 
 instructions, however instructions can be placed on the data bus if the 
 programmer desires. The address bus is used to move addresses around the 
-processor. The processor's 8-bit data buses are strictly seperated from the 
+processor. The processor's 8-bit data buses are strictly separated from the 
 16-bit address buses. The only points of access between the 16-bit bus and the 
 8-bit bus are the stack pointer and the combined \Gr{}\Hr{} register. The 
 control bus is the collection of control signals coming from the processing 
@@ -430,7 +430,7 @@ The control logic is responsible for manipulating the processing logic in such
 a way that an instruction is carried out. For any given instruction a variety
 of low level operations must be carried out. The instruction must be fetched
 from a memory address, it must be decoded, control signals must be applied to
-the control bus for specific lenghts of time, and finally the address of the
+the control bus for specific lengths of time, and finally the address of the
 next instruction must be calculated. This general sequence of operations is the
 machine cycle. The specifics of the \mt{}'s machine cycle are discussed in the 
 next section (4.1).
@@ -439,7 +439,7 @@ next section (4.1).
 For each instruction some stages of the machine cycle are the same. All 
 instructions must be fetched and decoded, and the address of the next 
 instruction must be determined before the next machine cycle can begin. However
-every instrcution does a different thing. In the \mt{} the stages of the 
+every instruction does a different thing. In the \mt{} the stages of the 
 machine cycle that differ for each instruction are written in microcode. This
 means that some portion of each machine cycle is spent executing instruction
 specific microcode rather than instruction agnostic machine states.
@@ -461,7 +461,7 @@ The machine cycle is the series of steps that are carried out to execute an
 instruction. In the \mt{} the machine cycle is controlled by a finite state 
 machine (FSM). A state diagram for the \mt{}'s FSM is shown in figure 2. The
 FSM has six states. Transitions between states occur on the rising edge of the
-system clock. To accomodate a variable number of microcode steps the \mt{} may
+system clock. To accommodate a variable number of microcode steps the \mt{} may
 remain in the \Ex{} state for an arbitrary number of clock cycles. 
 \par
 
@@ -486,7 +486,7 @@ access can begin.
 The second and third states in the machine cycle (\Fo{} and \Ft{}) allow time 
 for the next instruction to be retrieved from memory. Memory requires two clock
 cycles to access, one to latch the address in and one to latch data out. Since
-the program counter's value cannot be gauranteed until the end of \Se{}, two
+the program counter's value cannot be guaranteed until the end of \Se{}, two
 additional states are required to ensure that memory is accessed properly. The
 current memory value is an input to the DBM (section 3.1 \& 3.2) and the input
 to the instruction register (\IR{}). During the \Ft{} state the load line on
@@ -505,7 +505,7 @@ the microcode. This is the \Ex{} state. Each 'microinstruction' that is
 executed represents an instruction specific 'microstate' that the processor
 enters while remaining in the \Ex{} 'macrostate'. Each microinstruction that is
 followed by another microinstruction must signal the FSM to ensure that it 
-remains in the \Ex{} 'macrostate'. The last microintruction in an instruction 
+remains in the \Ex{} 'macrostate'. The last microinstruction in an instruction 
 does not signal the FSM, thereby allowing it to continue to the final state in
 the machine cycle.
 \par
@@ -519,14 +519,14 @@ fetching the next instruction in the program.
 \subsection{Microcode}
 The \mt{}'s microcode provides a means to translate an instruction into a 
 control bus state. The \mt{}' microcode is stored in a look up table. The
-instrcution held in the \IR{} acts as an address and is fed into the look up
+instruction held in the \IR{} acts as an address and is fed into the look up
 table. The output of the look up table is applied to the control bus enable
 multiplexer (CBEN in figure 1). When in the \Ex{} state the CBEN is set to
 apply the microcode to the control bus. Every microinstruction that is followed
 by another microinstruction must signal the FSM to remain in the \Ex{} state.
 This means that the last microinstruction in a 'microprogram' 
 (macroinstruction) must not signal the FSM, thereby allowing the machine cycle
-to continue. Additionally each microinstrution must load the next 
+to continue. Additionally each microinstruction must load the next 
 microinstruction in the 'microprogram'.
 \par
 
@@ -537,7 +537,7 @@ in sequential microaddresses as this allows the next microinstruction in a
 microprogram to be indexed simply by incrementing the value of the \IR{}. This
 is exactly how the \mt{} works. The \IR{} includes logic to allow it to be 
 incremented and thereby index the next microinstruction. Since the condition
-for signaling the FSM to stay in the \Ex{} state and the condition for
+for signalling the FSM to stay in the \Ex{} state and the condition for
 incrementing the \IR{} are the same a single bit of the control bus can be used
 to do both.
 \par
@@ -553,7 +553,7 @@ represented by a given opcode \textit{C} what is really meant is that the
 opcode \textit{C} is the first microaddress in the microprogram that implements
 that macroinstruction. Table 1 shows which opcode each instruction in the \mi{}
 maps to. The shaded cells in table 1 are microaddresses which are only steps
-in microprograms. The labeled cells are the first addresses in their respective
+in microprograms. The labelled cells are the first addresses in their respective
 microprograms, i.e. 'the opcode' for that instruction.
 \par
 
@@ -568,7 +568,7 @@ the diagram in a few areas. The bus multiplexers: ABM, DBM, CBEN, are not
 implemented as distinct entities but are instead part of the 
 \texttt{central\_processing\_unit.vhd} file. The GPRs are multiple instances
 of the \texttt{general\_purpose\_register.vhd} entity rather than distinct
-entities. \texttt{genral\_purpose\_register.vhd} and most SPRs are implemented
+entities. \texttt{general\_purpose\_register.vhd} and most SPRs are implemented
 as simple 8-bit registers with some additional logic. The underlying 8-bit 
 registers are implemented as instances of the \texttt{register\_8bit.vhd} 
 entity. Some other important implementation details relating to bus 
@@ -577,7 +577,7 @@ explained in the following subsections.
 
 The processor's source should be relatively easy to follow once one is familiar
 with figure 1 and the abbreviations used throughout this document. As such a 
-detailed description of what each file does is largely uneeeded. If one
+detailed description of what each file does is largely unneeded. If one
 wishes for greater detail about the processor's implementation one is encouraged
 to read through the VHDL source.
 \par
@@ -585,9 +585,9 @@ to read through the VHDL source.
 \subsection{Bus Architecture Implementation}
 Buses are often represented as strictly passive, i.e. wires. This presents a 
 problem when multiple logical outputs are attached to a single bus: suppose one
-device whishes to assert a value on the bus, what value should the other 
+device wishes to assert a value on the bus, what value should the other 
 devices on the bus assert? In discrete logic this problem is often resolved with
-tri-state logic. While tri-state logic can be modeled in VHDL it is awkward to 
+tri-state logic. While tri-state logic can be modelled in VHDL it is awkward to 
 do so. As such The \mt{}'s implementation avoids this issue by implementing 
 buses as multiplexers. For example; all devices that can assert data to the data
 bus are attached to the inputs of a data bus multiplexer (DBM). The output of 
@@ -599,7 +599,7 @@ bus.
 The branch instructions (sections 2.4.2 and 6.11) conditionally increment the
 program counter based on the value of the processor's status flags. Since there
 are 8 branch instructions the instruction bus includes 8 individual 
-'branch-bits'. During a branch intruction the appropriate 'branch-bit' is set.
+'branch-bits'. During a branch instruction the appropriate 'branch-bit' is set.
 If the condition associated with that branch-bit is met then the \PC{} is 
 incremented, otherwise it's value is left untouched. Determining whether or 
 not the branch condition has been met is handled by the 'branch decoder'
@@ -612,7 +612,7 @@ This single bit is applied to the \PC{}'s increment line.
 Since some other instructions also need access to the \PC{}'s increment line
 The branch decoder also OR's these inputs with the single bit described above.
 This has an important implication for microcode, namely, it is possible to 
-construct contridictory microinstructions. The processor has no safety 
+construct contradictory microinstructions. The processor has no safety 
 mechanisms to deal with buggy microcode. It is up to the programmer to ensure
 that microinstructions are contradiction free.
 \par
@@ -636,7 +636,7 @@ is added as a another input to the ABM. This is implemented in the file
 \section{Detailed Instruction Descriptions}
 This section provides a detailed description of each instruction in the \mi{}.
 Some instructions are very similar, as such they have been grouped for 
-convenience. A discription of each instruction's microstates is also included.
+convenience. A description of each instruction's microstates is also included.
 This section is included primarily as technical reference. High level 
 descriptions of the instruction set and the microcode implementation are provided
 in sections 2 and 4 respectively. Table 1 (section 6.14) provides a handy 
@@ -652,7 +652,7 @@ whereas \texttt{la} is a port present on each GPR in the VHDL code.
 \par
 
 \subsection{Load GPR}
-These instrcutions load \qq{} with the value of \rr{}, where \qq{} and \rr{}
+These instructions load \qq{} with the value of \rr{}, where \qq{} and \rr{}
 are general purpose registers. Mnemonics take the form: LD\qq{} \rr{}.
 \par
 
@@ -674,14 +674,14 @@ are general purpose registers. Mnemonics take the form: LD\qq{} \rr{}.
 \end{itemize}
 
 \subsection{Load SPR}
-These instructions are conceptualy similar to the load GPR instructions
+These instructions are conceptually similar to the load GPR instructions
 (section 6.1) but have varying microcode implementations due to the fact that
 each SPR is implemented and connected in a unique manner.
 \par
 
-This instructon Loads the combined \Gr{}\Hr{} register with the value of the 
+This instruction Loads the combined \Gr{}\Hr{} register with the value of the 
 \PC{}. The reverse operation; loading the \PC{} with the value of the 
-\Gr{}\Hr{} register is implemented by the 'jump' instrcution (section 6.13).
+\Gr{}\Hr{} register is implemented by the 'jump' instruction (section 6.13).
 \par
 
 \begin{itemize}
@@ -782,7 +782,7 @@ register. Where \qq{} is a GPR.
 These instructions Load \qq{} with a literal hexadecimal value (represented by
 a \#). Where \qq{} is a GPR. The literal is stored in the address directly 
 following the instruction. This means that this instruction assembles to two
-addresses; one for the instrcution code and one for the constant value.
+addresses; one for the instruction code and one for the constant value.
 \par
 
 \begin{itemize}
@@ -835,7 +835,7 @@ operation increments the stack pointer.
 \subsection{Pop GPR}
 These instructions pop the top of the zero page stack into \qq{}. Where \qq{}
 is a GPR. The stack grows from low addresses to high addresses so this 
-operation decremnts the stack pointer.
+operation decrements the stack pointer.
 \par
 
 \begin{itemize}
@@ -977,7 +977,7 @@ to complete. For more information on the no-operation see section 2.4.
 \end{itemize}
 
 \subsection{Jump}
-This intruction sets the \PC{} so that the next instruction executed is the one
+This instruction sets the \PC{} so that the next instruction executed is the one
 stored at the address held in the \Gr{}\Hr{} register (i.e. (J)u(MP) to GH).
 Note that since a machine cycle ends with the \PC{} incrementing it is 
 necessary to load the \PC{} with the address held in \Gr{}\Hr{} less 1. For 
