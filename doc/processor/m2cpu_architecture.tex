@@ -596,9 +596,41 @@ bus.
 \par
 
 \subsection{Branch Instruction Implementation}
+The branch instructions (sections 2.4.2 and 6.11) conditionally increment the
+program counter based on the value of the processor's status flags. Since there
+are 8 branch instructions the instruction bus includes 8 individual 
+'branch-bits'. During a branch intruction the appropriate 'branch-bit' is set.
+If the condition associated with that branch-bit is met then the \PC{} is 
+incremented, otherwise it's value is left untouched. Determining whether or 
+not the branch condition has been met is handled by the 'branch decoder'
+(\texttt{branch\_decoder.vhd} in the source tree). The branch decoder AND's
+the branch-bits and the processor's status flags (or the inverse of the status
+flags). The resultant bus is then OR'ed together producing a single bit result.
+This single bit is applied to the \PC{}'s increment line.
+\par
+
+Since some other instructions also need access to the \PC{}'s increment line
+The branch decoder also OR's these inputs with the single bit described above.
+This has an important implication for microcode, namely, it is possible to 
+construct contridictory microinstructions. The processor has no safety 
+mechanisms to deal with buggy microcode. It is up to the programmer to ensure
+that microinstructions are contradiction free.
+\par
 
 \subsection{Jump Instruction Implementation}
-%gh - 1 thing
+At the end of every machine cycle the program counter is incremented (section 
+4.1). This presents a problem for the unconditional jump instruction (sections 
+2.4.1, and 6.13). The jump instruction is intended to set the address of the 
+next instruction to be executed as the value stored in the \Gr{}\Hr{} register.
+Simply loading the program counter with the value stored in \Gr{}\Hr{} would 
+cause the address of the next instruction to be \Gr{}\Hr{} + 1 since the program
+counter is incremented at the end of the machine cycle. To resolve this problem
+the \texttt{JMP} instruction loads the value \Gr{}\Hr{} - 1 into the program
+counter thereby correcting for the end of cycle increment. The subtraction 
+operation is handled as part of the ABM. Essentially the value \Gr{}\Hr{} - 1
+is added as a another input to the ABM. This is implemented in the file
+\texttt{central\_processing\_unit.vhd}.
+\par
 
 \newpage
 \section{Detailed Instruction Descriptions}
