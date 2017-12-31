@@ -7,7 +7,7 @@ DOCUMENT=m2cpu_architecture
 
 .PHONY: clean all spelling view
 
-all: spelling $(DOCUMENT).pdf view
+all: $(DOCUMENT).pdf
 
 $(DOCUMENT).pdf: $(DOCUMENT).tex
 	$(PDF) $(DOCUMENT).tex
