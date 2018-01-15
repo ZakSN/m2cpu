@@ -8,7 +8,11 @@ spreadsheet (`m2cpu_ISA.ods`) contains a colour coded table of the processor's
 75 instruction codes (useful programming reference).
 
 The directory `processor` contains extensive LaTeX documentation for the 
-processor and its instruction set. To build a PDF from the LaTeX source:
+processor and its instruction set. 
+
+NEW: the compiled architecture PDF is also available in `processor`.
+
+To build a PDF from the LaTeX source:
 
 ```
 $ cd "${CHECKOUT_ROOT}"/doc/processor
