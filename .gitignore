@@ -35,3 +35,6 @@ output_files
 /tools/microcode_generator/gen_ucode
 /tools/microcode_generator/ucode_gen.vhd
 /tools/assembler/assembler
+
+#un-ignore some compiled tex:
+!m2cpu_architecture.pdf
